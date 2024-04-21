@@ -48,7 +48,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public static boolean ready = false;
     public static boolean flag = true;
 
-    List<String> medias;
+    public List<String> medias;
     List<InputMedia> inputsMedia;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
@@ -124,6 +124,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             String text = message.getCaption();
             Long chatId = message.getChatId();
             String photo = message.getPhoto().get(0).getFileId();
+            String username = message.getChat().getUserName();
+
+            SendPhoto sendPhoto = new SendPhoto();
+            sendPhoto.setPhoto(new InputFile(photo));
+            sendPhoto.setChatId(-1002141489384L);
+            sendPhoto.setCaption(text);
 
             medias.add(photo);
             if (flag) {
@@ -132,6 +138,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 flag.setChatIdChannel(-1002141489384L);
                 flag.setChatId(chatId);
                 flag.setText(text);
+                flag.setSendPhoto(sendPhoto);
+                flag.setUsername(username);
                 Thread thread = new Thread(flag);
                 thread.start();
             }
@@ -145,6 +153,16 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         try {
             execute(deleteMessage);
+            execute(photo);
+        } catch (TelegramApiException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @SneakyThrows
+    public void justSendPhoto(SendPhoto photo) {
+
+        try {
             execute(photo);
         } catch (TelegramApiException e) {
             System.out.println(e.getMessage());
@@ -186,7 +204,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     @SneakyThrows
-    public void ready(Long chatId, String text) {
+    public void publishAlbum(Long chatId, String text, String username) {
         ready = true;
 
         SendMediaGroup mediaGroup = new SendMediaGroup();
@@ -194,14 +212,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             InputMedia photo = new InputMediaPhoto();
             photo.setMedia(s);
             if (medias.get(0).equals(s)) {
-                photo.setCaption(text);
+                photo.setCaption(text + "\n\nПродавец - " + username);
             }
             inputsMedia.add(photo);
         }
         mediaGroup.setMedias(inputsMedia);
         mediaGroup.setChatId(chatId);
 
-        ready = false;
-        execute(mediaGroup);
+        if (medias.size() > 1) {
+            execute(mediaGroup);
+        } else {
+
+        }
     }
 }
