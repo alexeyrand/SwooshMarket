@@ -14,13 +14,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.io.File;
 
 @Component
 @RequiredArgsConstructor
-public class EventHandler {
+public class MessageHandler {
     @Lazy
     @Autowired
     private TelegramBot telegramBot;
@@ -47,6 +46,5 @@ public class EventHandler {
         deleteMessage.setMessageId(messageId);
 
         telegramBot.sendPhoto(photo, deleteMessage);
-
     }
 }
