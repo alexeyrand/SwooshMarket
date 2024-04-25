@@ -1,6 +1,11 @@
 package com.alexeyrand.swooshbot.telegram;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
+import com.alexeyrand.swooshbot.datamodel.entity.Chat;
+import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
+import com.alexeyrand.swooshbot.telegram.inline.MainMenuInline;
+import com.alexeyrand.swooshbot.telegram.inline.MenuInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishInline;
 import com.alexeyrand.swooshbot.telegram.inline.SdekInline;
 import com.alexeyrand.swooshbot.telegram.service.MessageHandler;
@@ -8,6 +13,7 @@ import com.alexeyrand.swooshbot.telegram.service.MessageSender;
 import com.alexeyrand.swooshbot.telegram.service.QueryHandler;
 import com.alexeyrand.swooshbot.telegram.service.Utils;
 import com.alexeyrand.swooshbot.telegram.utils.Flag;
+import com.sun.tools.javac.Main;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,9 +35,9 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Component
@@ -43,20 +49,29 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final Utils utils;
     private final SdekInline sdekInline;
     private final PublishInline publishInline;
+    private final MenuInline menuInline;
     private final QueryHandler queryHandler;
-    private boolean wait = false;
+    private final MainMenuInline mainMenuInline;
+    private final ChatService chatService;
+    private final ChatRepository chatRepository;
+    public static boolean wait = false;
     public static boolean ready = false;
     public static boolean flag = true;
 
-    public List<String> medias;
-    List<InputMedia> inputsMedia;
+
+    public List<String> medias = new ArrayList<>();
+    public List<InputMedia> inputsMedia = new ArrayList<>();
 
     public TelegramBot(@Value("${bot.token}") String botToken,
                        BotConfig config, MessageSender messageSender, MessageHandler messageHandler,
                        SdekInline sdekInline,
                        PublishInline publishInline,
                        QueryHandler queryHandler,
-                       Utils utils) throws TelegramApiException {
+                       Utils utils,
+                       MenuInline menuInline,
+                       MainMenuInline mainMenuInline,
+                       ChatService chatService,
+                       ChatRepository chatRepository) throws TelegramApiException {
         super(botToken);
         this.config = config;
         this.messageSender = messageSender;
@@ -65,6 +80,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.publishInline = publishInline;
         this.queryHandler = queryHandler;
         this.utils = utils;
+        this.menuInline = menuInline;
+        this.mainMenuInline = mainMenuInline;
+        this.chatService = chatService;
+        this.chatRepository = chatRepository;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Меню"));
         this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), "ru"));
@@ -78,12 +97,25 @@ public class TelegramBot extends TelegramLongPollingBot {
     @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage() && update.getMessage().hasText() && !wait) {
+
             Message message = update.getMessage();
+
+            if (chatService.findWaitByChatId(message.getChatId()).isEmpty()) {
+                chatService.save(
+                        Chat.builder()
+                                .chatId(update.getMessage().getChatId())
+                                .wait(false)
+                                .build());
+                Optional<Chat> waitRest = chatService.findWaitByChatId(update.getMessage().getChatId());
+                System.out.println(waitRest.get());
+            }
+
             Integer messageId = message.getMessageId();
             String chatId = message.getChatId().toString();
             String messageText = message.getText();
             System.out.println(messageText);
+
 
             if (wait) {
                 System.out.println("Жду сообщение");
@@ -91,9 +123,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 wait = false;
             } else {
                 switch (messageText) {
-//                    case "ready" -> ready(chatId);
-                    case "/start" ->
-                            messageHandler.StartCommandReceived(chatId, messageId);//, InlineKeyboardMarkup inline);
+                    case "/start" -> messageHandler.StartCommandReceived(chatId, messageId);
                     default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
                 }
             }
@@ -104,46 +134,71 @@ public class TelegramBot extends TelegramLongPollingBot {
             Integer messageId = message.getMessageId();
             String chatId = message.getChatId().toString();
             String data = query.getData();
-            switch (data) {
 
+            switch (data) {
                 case "publish" -> queryHandler.publishReceived(chatId, messageId);
 //                case "legit" -> sendMessageWithInlineSdek(chatId);
                 case "sdek" -> queryHandler.sdekReceived(chatId, messageId);
 //                case "garant" -> sendMessageWithInlineSdek(chatId);
 //                case "adv" -> sendMessageWithInlineSdek(chatId);
 
-                case "publish/free" -> queryHandler.publishFree1Received(chatId, messageId);
-                case "publish/free/1" -> queryHandler.publishFree1Received(chatId, messageId);
+                case "publish/free" -> queryHandler.publishFreeReceived(chatId, messageId);
+                case "publish/back" -> messageHandler.StartCommandReceived(chatId, messageId);
+
+                //case "publish/free/1" -> queryHandler.publishFree1Received(chatId, messageId);
+                case "publish/free/back" -> queryHandler.publishReceived(chatId, messageId);
 //                case "sdek/order" -> sendMessageWithInlineSdek(chatId);
+                case "publish/free/success" -> queryHandler.publishReceived(chatId, messageId);
 
                 default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }
-        } else if (update.hasMessage() && update.getMessage().hasPhoto()) {
+        } else if (update.hasMessage() && update.getMessage().hasPhoto() && wait || update.hasMessage() && !update.getMessage().hasPhoto() && wait) {
+
+            System.out.println(Thread.currentThread().getName());
 
             Message message = update.getMessage();
             String text = message.getCaption();
             Long chatId = message.getChatId();
-            String photo = message.getPhoto().get(0).getFileId();
-            String username = message.getChat().getUserName();
+            System.out.println(Thread.currentThread().getName() + " :::::::::::: " + (chatService.findWaitByChatId(chatId).get().getWait()));
+            Integer messageId = message.getMessageId();
 
-            SendPhoto sendPhoto = new SendPhoto();
-            sendPhoto.setPhoto(new InputFile(photo));
-            sendPhoto.setChatId(-1002141489384L);
-            sendPhoto.setCaption(text);
+            if (!update.getMessage().hasPhoto()) {
+                medias.clear();
+                inputsMedia.clear();
+                SendMessage responseMessage = new SendMessage();
+                responseMessage.setChatId(chatId);
+                responseMessage.setText("Объявление не может быть без фотографий! Прикрепите фотографии товаров.");
+                justSendMessage(responseMessage);
+                queryHandler.publishFreeReceived(chatId.toString(), -1);
 
-            medias.add(photo);
-            if (flag) {
-                flag = false;
-                Flag flag = new Flag(this);
-                flag.setChatIdChannel(-1002141489384L);
-                flag.setChatId(chatId);
-                flag.setText(text);
-                flag.setSendPhoto(sendPhoto);
-                flag.setUsername(username);
-                Thread thread = new Thread(flag);
-                thread.start();
+
+            } else {
+
+                String photo = message.getPhoto().get(0).getFileId();
+                String username = message.getChat().getUserName();
+
+                //utils.isBlank(text, chatId);
+
+                SendPhoto sendPhoto = new SendPhoto();
+                sendPhoto.setPhoto(new InputFile(photo));
+                sendPhoto.setChatId(-1002141489384L);
+                sendPhoto.setCaption(text);
+
+                medias.add(photo);
+
+                if (flag) {
+                    flag = false;
+                    Flag flag = new Flag(this, utils, queryHandler, menuInline, mainMenuInline);
+                    flag.setChatIdChannel(-1002141489384L);
+                    flag.setChatId(chatId);
+                    flag.setText(text);
+                    flag.setSendPhoto(sendPhoto);
+                    flag.setUsername(username);
+                    flag.setMessage(message);
+                    Thread thread = new Thread(flag);
+                    thread.start();
+                }
             }
-            wait = false;
         }
 
     }
@@ -157,6 +212,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             System.out.println(e.getMessage());
         }
+        wait = false;
     }
 
     @SneakyThrows
@@ -192,8 +248,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @SneakyThrows
     public void sendMessageAndWait(SendMessage message, DeleteMessage deleteMessage) {
         wait = true;
-        medias = new ArrayList<>();
-        inputsMedia = new ArrayList<>();
+        chatService.update(Long.parseLong(message.getChatId()), true);
         try {
             execute(message);
             execute(deleteMessage);
@@ -205,24 +260,19 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @SneakyThrows
     public void publishAlbum(Long chatId, String text, String username) {
-        ready = true;
 
         SendMediaGroup mediaGroup = new SendMediaGroup();
         for (String s : medias) {
             InputMedia photo = new InputMediaPhoto();
             photo.setMedia(s);
             if (medias.get(0).equals(s)) {
-                photo.setCaption(text + "\n\nПродавец - " + username);
+                photo.setCaption(text + "\n\nПродавец - @" + username);
             }
             inputsMedia.add(photo);
         }
         mediaGroup.setMedias(inputsMedia);
         mediaGroup.setChatId(chatId);
-
-        if (medias.size() > 1) {
-            execute(mediaGroup);
-        } else {
-
-        }
+        wait = false;
+        execute(mediaGroup);
     }
 }
