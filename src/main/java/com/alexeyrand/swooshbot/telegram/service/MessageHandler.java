@@ -1,7 +1,10 @@
 package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
+import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
+import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.MenuInline;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -17,19 +20,21 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 import java.io.File;
 
+import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
+
 @Component
 @RequiredArgsConstructor
 public class MessageHandler {
     @Lazy
     @Autowired
     private TelegramBot telegramBot;
-
+    private final ChatService chatService;
     private final MessageSender messageSender;
     private final MenuInline menuInline;
     private final BotConfig config;
 
     @SneakyThrows
-    public void StartCommandReceived(String chatId, Integer messageId) {
+    public void StartCommandReceived(Long chatId, Integer messageId) {
         String answer = config.getHelpCommand();
         InlineKeyboardMarkup inline = menuInline.getMenuInline();
         File image = ResourceUtils.getFile("classpath:" + "static/images/menu.jpg");
@@ -41,10 +46,10 @@ public class MessageHandler {
         photo.setCaption(answer);
         photo.setReplyMarkup(inline);
 
-        DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(chatId);
-        deleteMessage.setMessageId(messageId);
-
-        telegramBot.sendPhoto(photo, deleteMessage);
+//        DeleteMessage deleteMessage = new DeleteMessage();
+//        deleteMessage.setChatId(chatId);
+//        deleteMessage.setMessageId(messageId);
+        chatService.updateState(chatId, NO_WAITING);
+        telegramBot.justSendPhoto(photo);
     }
 }

@@ -1,7 +1,9 @@
 package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
+import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.PublishFreeInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishInline;
 import com.alexeyrand.swooshbot.telegram.inline.SdekInline;
@@ -22,6 +24,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.File;
 import java.util.ArrayList;
 
+import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
+
 @Component
 @RequiredArgsConstructor
 public class QueryHandler {
@@ -33,9 +37,10 @@ public class QueryHandler {
     private final PublishFreeInline publishFreeInline;
     private final BotConfig config;
     private final Utils utils;
+    private final ChatService chatService;
 
     @SneakyThrows
-    public void publishReceived(String chadId, Integer messageId) {
+    public void publishReceived(Long chadId, Integer messageId) {
         File image = ResourceUtils.getFile("classpath:" + "static/images/publish.jpg");
         String answer = config.getPublishAnswer();
         SendPhoto photo = new SendPhoto();
@@ -49,15 +54,13 @@ public class QueryHandler {
         deleteMessage.setChatId(chadId);
         deleteMessage.setMessageId(messageId);
 
-        TelegramBot.wait = false;
+        chatService.updateState(chadId, NO_WAITING);
 
         telegramBot.sendPhoto(photo, deleteMessage);
     }
 
     @SneakyThrows
-    public void publishFreeReceived(String chatId, Integer messageId) {
-        telegramBot.medias = new ArrayList<>();
-        //telegramBot.inputsMedia = new ArrayList<>();
+    public void publishFreeReceived(Long chatId, Integer messageId) {
 
         String answer = config.getPublishFree1Answer();
         SendMessage message = new SendMessage();
@@ -76,7 +79,6 @@ public class QueryHandler {
     @SneakyThrows
     public void publishFree1Received(String chatId, Integer messageId) {
 
-        telegramBot.medias = new ArrayList<>();
         //telegramBot.inputsMedia = new ArrayList<>();
 
         String answer = config.getPublishFree1Answer();
@@ -96,7 +98,7 @@ public class QueryHandler {
 
 
     @SneakyThrows
-    public void sdekReceived(String chatId, Integer messageId) {
+    public void sdekReceived(Long chatId, Integer messageId) {
 
         File image = ResourceUtils.getFile("classpath:" + "static/images/sdek.jpg");
         InlineKeyboardMarkup inline = sdekInline.getSdekInline();
@@ -115,8 +117,6 @@ public class QueryHandler {
         telegramBot.sendPhoto(photo, deleteMessage);
     }
 
-    public void publishBack(String chatId, Integer messageId) {
 
-    }
 
 }

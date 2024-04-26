@@ -1,7 +1,11 @@
 package com.alexeyrand.swooshbot.datamodel.entity;
 
+import com.alexeyrand.swooshbot.telegram.enums.State;
 import jakarta.persistence.*;
 import lombok.*;
+
+import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
+import static com.alexeyrand.swooshbot.telegram.enums.State.WAIT_FREE_PUBLISH;
 
 @Entity
 @Getter
@@ -18,6 +22,9 @@ public class Chat {
 
     Long chatId;
 
+    //@Builder.Default
+    //Boolean wait = false;
+
     @Builder.Default
-    Boolean wait = false;
+    State state = NO_WAITING;
 }

@@ -21,6 +21,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
+
 @Component
 @RequiredArgsConstructor
 public class Flag implements Runnable {
@@ -48,8 +50,6 @@ public class Flag implements Runnable {
     @Setter
     private String text;
     @Setter
-    private SendPhoto sendPhoto;
-    @Setter
     private String username;
     @Setter
     private Message message;
@@ -57,30 +57,26 @@ public class Flag implements Runnable {
     @Override
     public void run() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1500);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
         if (text == null || text.isBlank()) {
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Объявление не может быть пустым! Заполните информацию о товарах.");
             sendMessage.setChatId(chatId);
-            telegramBot.medias.clear();
             photoService.deleteAllByChatId(chatId);
+            chatService.updateState(chatId, NO_WAITING);
             telegramBot.justSendMessage(sendMessage);
-            queryHandler.publishFreeReceived(chatId.toString(), -1);
+            queryHandler.publishFreeReceived(chatId, -1);
             TelegramBot.flag = true;
-            TelegramBot.wait = true;
-        } else {
 
-            if (telegramBot.medias.size() > 1) {
-                telegramBot.publishAlbum(chatId, chatIdChannel, text, username);
-                TelegramBot.flag = true;
-            } else if (telegramBot.medias.size() == 1) {
-                telegramBot.justSendPhoto(sendPhoto);
-                TelegramBot.flag = true;
-            }
+        } else {
+            telegramBot.publishAlbum(chatId, text, username);
+            TelegramBot.flag = true;
+
             SendMessage message = new SendMessage();
 
             message.setChatId(chatId);

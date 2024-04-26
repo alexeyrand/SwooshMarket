@@ -2,6 +2,7 @@ package com.alexeyrand.swooshbot.datamodel.service.ChatService;
 
 import com.alexeyrand.swooshbot.datamodel.entity.Chat;
 import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
+import com.alexeyrand.swooshbot.telegram.enums.State;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,14 @@ public class ChatService {
         chatRepository.save(chat);
     }
 
-    public void update(Long chatId, Boolean wait) {
-        Chat chat = chatRepository.findByChatId(chatId).orElse(Chat.builder().chatId(chatId).wait(wait).build());
-        chat.setWait(wait);
+    public State getState(Long chatId) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        return chat.getState();
+    }
+
+    public void updateState(Long chatId, State state) {
+        Chat chat = chatRepository.findByChatId(chatId).orElse(Chat.builder().chatId(chatId).state(state).build());
+        chat.setState(state);
         chatRepository.save(chat);
     }
 

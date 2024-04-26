@@ -25,7 +25,7 @@ public class MessageSender {
 
     boolean wait = false;
 
-    public void sendMessage(String chatId, String answer) {
+    public void sendMessage(Long chatId, String answer) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(answer);

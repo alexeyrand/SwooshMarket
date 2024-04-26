@@ -18,15 +18,4 @@ public class Utils {
 
     private final PublishFreeInline publishFreeInline;
 
-    public void isBlank(String text, Long chatId) {
-        if (text == null || text.isEmpty()) {
-            SendMessage message = new SendMessage();
-            message.setText("Объявление не может быть пустым! Заполните информацию о товарах.");
-            message.setChatId(chatId);
-
-            telegramBot.justSendMessage(message);
-            TelegramBot.flag = false;
-            TelegramBot.wait = false;
-        }
-    }
 }
