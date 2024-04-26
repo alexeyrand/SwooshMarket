@@ -1,10 +1,14 @@
 package com.alexeyrand.swooshbot.telegram.utils;
 
+import com.alexeyrand.swooshbot.datamodel.entity.Photo;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService.PhotoService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.inline.MainMenuInline;
 import com.alexeyrand.swooshbot.telegram.inline.MenuInline;
 import com.alexeyrand.swooshbot.telegram.service.QueryHandler;
 import com.alexeyrand.swooshbot.telegram.service.Utils;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -15,24 +19,28 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class Flag implements Runnable {
 
 
-    private final TelegramBot telegramBot;
+    private  final TelegramBot telegramBot;
     private final Utils utils;
     private final QueryHandler queryHandler;
     private final MenuInline menuInline;
     private final MainMenuInline mainMenuInline;
+    private final ChatService chatService;
+    private final PhotoService photoService;
 
-    public Flag(TelegramBot telegramBot, Utils utils, QueryHandler queryHandler, MenuInline menuInline, MainMenuInline mainMenuInline) {
-        this.telegramBot = telegramBot;
-        this.utils = utils;
-        this.queryHandler = queryHandler;
-        this.menuInline = menuInline;
-        this.mainMenuInline = mainMenuInline;
-    }
+//    public Flag(TelegramBot telegramBot, Utils utils, QueryHandler queryHandler, MenuInline menuInline, MainMenuInline mainMenuInline) {
+//        this.telegramBot = telegramBot;
+//        this.utils = utils;
+//        this.queryHandler = queryHandler;
+//        this.menuInline = menuInline;
+//        this.mainMenuInline = mainMenuInline;
+//    }
     @Setter
     private Long chatId;
     @Setter
@@ -59,7 +67,7 @@ public class Flag implements Runnable {
             sendMessage.setText("Объявление не может быть пустым! Заполните информацию о товарах.");
             sendMessage.setChatId(chatId);
             telegramBot.medias.clear();
-            telegramBot.inputsMedia.clear();
+            photoService.deleteAllByChatId(chatId);
             telegramBot.justSendMessage(sendMessage);
             queryHandler.publishFreeReceived(chatId.toString(), -1);
             TelegramBot.flag = true;
@@ -67,7 +75,7 @@ public class Flag implements Runnable {
         } else {
 
             if (telegramBot.medias.size() > 1) {
-                telegramBot.publishAlbum(chatIdChannel, text, username);
+                telegramBot.publishAlbum(chatId, chatIdChannel, text, username);
                 TelegramBot.flag = true;
             } else if (telegramBot.medias.size() == 1) {
                 telegramBot.justSendPhoto(sendPhoto);

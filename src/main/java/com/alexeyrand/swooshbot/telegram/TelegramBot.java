@@ -2,8 +2,10 @@ package com.alexeyrand.swooshbot.telegram;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.datamodel.entity.Chat;
+import com.alexeyrand.swooshbot.datamodel.entity.Photo;
 import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
 import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService.PhotoService;
 import com.alexeyrand.swooshbot.telegram.inline.MainMenuInline;
 import com.alexeyrand.swooshbot.telegram.inline.MenuInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishInline;
@@ -54,13 +56,14 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final MainMenuInline mainMenuInline;
     private final ChatService chatService;
     private final ChatRepository chatRepository;
+    private final PhotoService photoService;
     public static boolean wait = false;
     public static boolean ready = false;
     public static boolean flag = true;
 
 
     public List<String> medias = new ArrayList<>();
-    public List<InputMedia> inputsMedia = new ArrayList<>();
+    //public List<InputMedia> inputsMedia = new ArrayList<>();
 
     public TelegramBot(@Value("${bot.token}") String botToken,
                        BotConfig config, MessageSender messageSender, MessageHandler messageHandler,
@@ -71,7 +74,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                        MenuInline menuInline,
                        MainMenuInline mainMenuInline,
                        ChatService chatService,
-                       ChatRepository chatRepository) throws TelegramApiException {
+                       ChatRepository chatRepository,
+                       PhotoService photoService) throws TelegramApiException {
         super(botToken);
         this.config = config;
         this.messageSender = messageSender;
@@ -84,6 +88,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.mainMenuInline = mainMenuInline;
         this.chatService = chatService;
         this.chatRepository = chatRepository;
+        this.photoService = photoService;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Меню"));
         this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), "ru"));
@@ -152,9 +157,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }
-        } else if (update.hasMessage() && update.getMessage().hasPhoto() && wait || update.hasMessage() && !update.getMessage().hasPhoto() && wait) {
-
-            System.out.println(Thread.currentThread().getName());
+        } else if (update.hasMessage() && chatService.findWaitByChatId(update.getMessage().getChatId()).get().getWait()) {
 
             Message message = update.getMessage();
             String text = message.getCaption();
@@ -163,21 +166,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             Integer messageId = message.getMessageId();
 
             if (!update.getMessage().hasPhoto()) {
-                medias.clear();
-                inputsMedia.clear();
+                //medias.clear();                               /////////////////////////////////
                 SendMessage responseMessage = new SendMessage();
                 responseMessage.setChatId(chatId);
                 responseMessage.setText("Объявление не может быть без фотографий! Прикрепите фотографии товаров.");
                 justSendMessage(responseMessage);
                 queryHandler.publishFreeReceived(chatId.toString(), -1);
 
-
             } else {
 
                 String photo = message.getPhoto().get(0).getFileId();
                 String username = message.getChat().getUserName();
-
-                //utils.isBlank(text, chatId);
 
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setPhoto(new InputFile(photo));
@@ -185,10 +184,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendPhoto.setCaption(text);
 
                 medias.add(photo);
+                photoService.save(Photo.builder().chatId(message.getChatId()).photo(photo).build());
 
                 if (flag) {
                     flag = false;
-                    Flag flag = new Flag(this, utils, queryHandler, menuInline, mainMenuInline);
+                    Flag flag = new Flag(this, utils, queryHandler, menuInline, mainMenuInline, chatService, photoService);
                     flag.setChatIdChannel(-1002141489384L);
                     flag.setChatId(chatId);
                     flag.setText(text);
@@ -259,20 +259,25 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     @SneakyThrows
-    public void publishAlbum(Long chatId, String text, String username) {
+    public void publishAlbum(Long chatId, Long chatChannel, String text, String username) {
+        List<InputMedia> inputsMedia = new ArrayList<>();
 
         SendMediaGroup mediaGroup = new SendMediaGroup();
-        for (String s : medias) {
-            InputMedia photo = new InputMediaPhoto();
-            photo.setMedia(s);
-            if (medias.get(0).equals(s)) {
-                photo.setCaption(text + "\n\nПродавец - @" + username);
+        List<Photo> photos = photoService.findAllPhotosByChatId(chatId);
+        for (Photo photo : photos) {
+            String url = photo.getPhoto();
+            InputMedia inputPhoto = new InputMediaPhoto();
+            inputPhoto.setMedia(url);
+            if (medias.get(0).equals(url)) {
+                inputPhoto.setCaption(text + "\n\nПродавец - @" + username);
             }
-            inputsMedia.add(photo);
+            inputsMedia.add(inputPhoto);
         }
         mediaGroup.setMedias(inputsMedia);
-        mediaGroup.setChatId(chatId);
+        mediaGroup.setChatId(chatChannel);
         wait = false;
         execute(mediaGroup);
+        photoService.deleteAllByChatId(chatId);
+        chatService.update(chatId, false);
     }
 }

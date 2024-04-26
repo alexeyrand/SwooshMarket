@@ -57,7 +57,7 @@ public class QueryHandler {
     @SneakyThrows
     public void publishFreeReceived(String chatId, Integer messageId) {
         telegramBot.medias = new ArrayList<>();
-        telegramBot.inputsMedia = new ArrayList<>();
+        //telegramBot.inputsMedia = new ArrayList<>();
 
         String answer = config.getPublishFree1Answer();
         SendMessage message = new SendMessage();
@@ -77,7 +77,7 @@ public class QueryHandler {
     public void publishFree1Received(String chatId, Integer messageId) {
 
         telegramBot.medias = new ArrayList<>();
-        telegramBot.inputsMedia = new ArrayList<>();
+        //telegramBot.inputsMedia = new ArrayList<>();
 
         String answer = config.getPublishFree1Answer();
         SendMessage message = new SendMessage();
