@@ -22,8 +22,8 @@ public class Chat {
 
     Long chatId;
 
-    //@Builder.Default
-    //Boolean wait = false;
+    @Builder.Default
+    Boolean block = true;
 
     @Builder.Default
     State state = NO_WAITING;

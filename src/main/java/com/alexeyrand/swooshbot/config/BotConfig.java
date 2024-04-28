@@ -21,6 +21,9 @@ public class BotConfig {
     @Value("${bot.token}")
     private String token;
 
+    @Value("${bot.payments_token}")
+    private String paymentsToken;
+
     @Value("${answer.command.help}")
     private String helpCommand;
 
@@ -30,13 +33,13 @@ public class BotConfig {
     @Value("${answer.command.publish}")
     private String publishAnswer;
 
-    @Value("${answer.command.free1}")
-    private String publishFree1Answer;
+    @Value("${answer.command.free}")
+    private String publishFreeAnswer;
 
-//    @Bean
-//    public TelegramBotsApi telegramBotsApi(TelegramBot bot) throws TelegramApiException {
-//        var api = new TelegramBotsApi(DefaultBotSession.class);
-//        api.registerBot(bot);
-//        return api;
-//    }
+    @Value("${answer.command.paid}")
+    private String publishPaidAnswer;
+
+    @Value("${answer.command.check}")
+    private String publishCheckPaidAnswer;
+
 }

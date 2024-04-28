@@ -46,9 +46,6 @@ public class MessageHandler {
         photo.setCaption(answer);
         photo.setReplyMarkup(inline);
 
-//        DeleteMessage deleteMessage = new DeleteMessage();
-//        deleteMessage.setChatId(chatId);
-//        deleteMessage.setMessageId(messageId);
         chatService.updateState(chatId, NO_WAITING);
         telegramBot.justSendPhoto(photo);
     }

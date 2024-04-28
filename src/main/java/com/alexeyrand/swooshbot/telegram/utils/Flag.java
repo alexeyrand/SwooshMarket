@@ -36,13 +36,6 @@ public class Flag implements Runnable {
     private final ChatService chatService;
     private final PhotoService photoService;
 
-//    public Flag(TelegramBot telegramBot, Utils utils, QueryHandler queryHandler, MenuInline menuInline, MainMenuInline mainMenuInline) {
-//        this.telegramBot = telegramBot;
-//        this.utils = utils;
-//        this.queryHandler = queryHandler;
-//        this.menuInline = menuInline;
-//        this.mainMenuInline = mainMenuInline;
-//    }
     @Setter
     private Long chatId;
     @Setter
@@ -57,7 +50,7 @@ public class Flag implements Runnable {
     @Override
     public void run() {
         try {
-            Thread.sleep(1500);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -71,14 +64,13 @@ public class Flag implements Runnable {
             chatService.updateState(chatId, NO_WAITING);
             telegramBot.justSendMessage(sendMessage);
             queryHandler.publishFreeReceived(chatId, -1);
-            TelegramBot.flag = true;
+            chatService.updateBlock(chatId, true);
 
         } else {
             telegramBot.publishAlbum(chatId, text, username);
-            TelegramBot.flag = true;
+            chatService.updateBlock(chatId, true);
 
             SendMessage message = new SendMessage();
-
             message.setChatId(chatId);
             message.setReplyMarkup(mainMenuInline.getMenuInline());
             message.setText("Готово! Публикация отправлена на модерацию.");

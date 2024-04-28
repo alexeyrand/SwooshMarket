@@ -29,9 +29,20 @@ public class ChatService {
         return chat.getState();
     }
 
+    public Boolean getBlock(Long chatId) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        return chat.getBlock();
+    }
+
     public void updateState(Long chatId, State state) {
         Chat chat = chatRepository.findByChatId(chatId).orElse(Chat.builder().chatId(chatId).state(state).build());
         chat.setState(state);
+        chatRepository.save(chat);
+    }
+
+    public void updateBlock(Long chatId, Boolean block) {
+        Chat chat = chatRepository.findByChatId(chatId).orElse(Chat.builder().chatId(chatId).build());
+        chat.setBlock(block);
         chatRepository.save(chat);
     }
 
