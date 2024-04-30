@@ -95,7 +95,7 @@ public class QueryHandler {
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(-22);
         chatService.updateBlock(chatId, true);
-        telegramBot.sendMessageAndWait(message, deleteMessage);
+        telegramBot.sendMessageWithDelete(message, deleteMessage);
     }
 
     @SneakyThrows

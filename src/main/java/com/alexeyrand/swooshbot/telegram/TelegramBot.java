@@ -228,7 +228,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     @SneakyThrows
-    public void sendMessage(SendMessage message, DeleteMessage deleteMessage) {
+    public void sendMessageWithDelete(SendMessage message, DeleteMessage deleteMessage) {
 
         try {
             execute(message);
@@ -295,15 +295,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     public String buy(CreateInvoiceLink invoiceLink) throws TelegramApiException {
 
         return execute(invoiceLink);
-//        SendMessage sendMessage = new SendMessage();
-//        sendMessage.setChatId(message.getChatId());
-//        sendMessage.setText("Оплата");
-//        sendMessage.setReplyMarkup(buyInline.getBuyInline(response));
-//        execute(sendMessage);
-
-//        Invoice invoice = new Invoice();
-//        invoice.set
-//        message.setInvoice();
     }
 
 
