@@ -1,9 +1,8 @@
 package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
-import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.PublishCheckPaidInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishFreeInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishInline;
@@ -25,10 +24,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
+import static com.alexeyrand.swooshbot.telegram.enums.State.WAIT_PAID_PUBLISH;
 
 @Component
 @RequiredArgsConstructor
@@ -83,8 +82,8 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishPaidReceived(Long chatId, Integer messageId) {
-
         String answer = config.getPublishPaidAnswer();
+
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
@@ -96,6 +95,9 @@ public class QueryHandler {
         deleteMessage.setMessageId(-22);
         chatService.updateBlock(chatId, true);
         telegramBot.sendMessageWithDelete(message, deleteMessage);
+
+        chatService.updatePaidPublishStatus(chatId, true);
+        chatService.updateState(chatId, WAIT_PAID_PUBLISH);
     }
 
     @SneakyThrows
@@ -120,10 +122,14 @@ public class QueryHandler {
 
     public void publishCheckPaidReceived(Long chatId, Integer messageId) throws TelegramApiException {
         String answer = config.getPublishCheckPaidAnswer();
-
+        if (chatService.getPaidPublishStatus(chatId)) {
+            answer = answer + "\n\n*Статус оплаты*:\nОплачено, услуга доступна ✅";
+        } else {
+            answer = answer + "\n\nСтатус оплаты:\nНе оплачено, услуга недоступна ❌";
+        }
         CreateInvoiceLink invoiceLink = new CreateInvoiceLink(
-                "TestTitle",
-                "TestDescr",
+                "Публикация вне очереди",
+                "Публикация размещается в канал * сразу после того, как пост пройдет проверку модератором",
                 chatId.toString(),
                 config.getPaymentsToken(),
                 "RUB", List.of(new LabeledPrice("Цена", 222 * 100)));
@@ -136,7 +142,7 @@ public class QueryHandler {
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
         message.setText(answer);
-        message.setReplyMarkup(publishCheckPaidInline.getPublishCheckPaidInline(response));
+        message.setReplyMarkup(publishCheckPaidInline.getPublishCheckPaidInline(response, chatId));
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);

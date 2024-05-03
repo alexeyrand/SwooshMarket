@@ -1,10 +1,8 @@
 package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService.ChatService;
+import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
-import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.MenuInline;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 

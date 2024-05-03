@@ -13,13 +13,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
-
 @Component
 @RequiredArgsConstructor
-public class Flag implements Runnable {
-
-
+public class PaidPublishThread implements Runnable {
     private final TelegramBot telegramBot;
     private final Utils utils;
     private final QueryHandler queryHandler;
@@ -42,7 +38,7 @@ public class Flag implements Runnable {
     @Override
     public void run() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1700);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -55,12 +51,13 @@ public class Flag implements Runnable {
             photoService.deleteAllByChatId(chatId);
             //chatService.updateState(chatId, NO_WAITING);
             telegramBot.justSendMessage(sendMessage);
-            queryHandler.publishFreeReceived(chatId, -1);
+            queryHandler.publishPaidReceived(chatId, -1);
             chatService.updateBlock(chatId, true);
 
         } else {
             telegramBot.publishAlbum(chatId, text, username);
             chatService.updateBlock(chatId, true);
+            chatService.updatePaidPublishStatus(chatId, false);
 
             SendMessage message = new SendMessage();
             message.setChatId(chatId);

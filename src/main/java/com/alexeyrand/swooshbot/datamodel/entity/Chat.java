@@ -17,14 +17,32 @@ import static com.alexeyrand.swooshbot.telegram.enums.State.WAIT_FREE_PUBLISH;
 public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
+    @Column(name = "id")
     Long Id;
 
     Long chatId;
 
+    /*
+    Состояние блокировки потока
+     */
     @Builder.Default
-    Boolean block = true;
+    Boolean block = false;
 
+    /*
+    Состояние пользователя
+     */
     @Builder.Default
     State state = NO_WAITING;
+
+    /*
+    Оплачена ли услуга "публикация вне очереди"
+    */
+    @Builder.Default
+    Boolean paidPublishStatus = false;
+
+    /*
+    Оплачена ли услуга "публикация вне очереди"
+    */
+    @Builder.Default
+    Boolean sdekStatus = false;
 }

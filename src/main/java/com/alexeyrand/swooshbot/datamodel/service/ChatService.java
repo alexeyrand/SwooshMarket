@@ -1,4 +1,4 @@
-package com.alexeyrand.swooshbot.datamodel.service.ChatService;
+package com.alexeyrand.swooshbot.datamodel.service;
 
 import com.alexeyrand.swooshbot.datamodel.entity.Chat;
 import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
@@ -29,7 +29,12 @@ public class ChatService {
         return chat.getState();
     }
 
-    public Boolean getBlock(Long chatId) {
+    public Boolean getPaidPublishStatus(Long chatId) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        return chat.getPaidPublishStatus();
+    }
+
+    public Boolean isBlock(Long chatId) {
         Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
         return chat.getBlock();
     }
@@ -46,5 +51,10 @@ public class ChatService {
         chatRepository.save(chat);
     }
 
+    public void updatePaidPublishStatus(Long chatId, Boolean status) {
+        Chat chat = chatRepository.findByChatId(chatId).orElse(Chat.builder().chatId(chatId).build());
+        chat.setPaidPublishStatus(status);
+        chatRepository.save(chat);
+    }
 
 }

@@ -1,4 +1,4 @@
-package com.alexeyrand.swooshbot.datamodel.service.ChatService;
+package com.alexeyrand.swooshbot.datamodel.service;
 
 import com.alexeyrand.swooshbot.datamodel.entity.Photo;
 import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
