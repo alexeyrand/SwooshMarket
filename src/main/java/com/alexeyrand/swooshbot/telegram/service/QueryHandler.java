@@ -120,7 +120,8 @@ public class QueryHandler {
         telegramBot.sendPhoto(photo, deleteMessage);
     }
 
-    public void publishCheckPaidReceived(Long chatId, Integer messageId) throws TelegramApiException {
+    @SneakyThrows
+    public void publishCheckPaidReceived(Long chatId, Integer messageId) {
         String answer = config.getPublishCheckPaidAnswer();
         if (chatService.getPaidPublishStatus(chatId)) {
             answer = answer + "\n\n*Статус оплаты*:\nОплачено, услуга доступна ✅";
@@ -149,8 +150,9 @@ public class QueryHandler {
         deleteMessage.setMessageId(messageId);
         chatService.updateBlock(chatId, true);
         telegramBot.sendMessageAndWait(message, deleteMessage);
-
     }
+
+    public void publishCheckPaidReceifved(Long chatId, Integer messageId) {}
 
 
 
