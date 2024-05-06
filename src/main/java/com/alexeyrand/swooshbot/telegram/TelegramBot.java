@@ -135,6 +135,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 publish.PublishFree(message, chatId);
             } else if (state.equals(WAIT_PAID_PUBLISH)) {
                 publish.PublishPaid(message, chatId);
+            } else if (state.equals(WAIT_SDEK_TARIFF)) {
+                return;
             } else if (!message.hasText() && message.hasPhoto()) {
                 messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }
@@ -169,11 +171,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 case "publish/paid" -> queryHandler.publishCheckPaidReceived(chatId, messageId);
                 case "publish/paid/publish" -> queryHandler.publishPaidReceived(chatId, messageId);
-                //case "publish/paid/pay" -> buy(message);
-                //case "publish/free/1" -> queryHandler.publishFree1Received(chatId, messageId);
+
                 case "publish/free/back" -> queryHandler.publishReceived(chatId, messageId);
-//                case "sdek/order" -> sendMessageWithInlineSdek(chatId);
                 case "publish/free/success" -> messageHandler.StartCommandReceived(chatId, messageId);
+
+                case "sdek/order" -> queryHandler.sdekOrderReceived(chatId, messageId);
+                case "sdek/order/1" -> queryHandler.sdekOrder1Received(chatId, messageId);
 
                 default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }

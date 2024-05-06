@@ -22,11 +22,7 @@ public class BuyInline {
         inlineKeyboardButton1.setUrl(response);
         inlineKeyboardButton1.setPay(true);
 
-
-
-
         rowInline1.add(inlineKeyboardButton1);
-
 
         rowsInline.add(rowInline1);
 

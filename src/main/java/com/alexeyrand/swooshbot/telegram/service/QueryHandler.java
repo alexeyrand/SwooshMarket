@@ -121,6 +121,43 @@ public class QueryHandler {
     }
 
     @SneakyThrows
+    public void sdekOrderReceived(Long chatId, Integer messageId) {
+
+        InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
+        String answer = config.getSdekOrderAnswer();
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText(answer);
+        message.setReplyMarkup(inline);
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+
+        telegramBot.sendMessageWithDelete(message, deleteMessage);
+    }
+
+    @SneakyThrows
+    public void sdekOrder1Received(Long chatId, Integer messageId) {
+
+        InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
+        String answer = config.getSdekOrder1Answer();
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText(answer);
+        message.setReplyMarkup(inline);
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+
+        telegramBot.sendMessageWithDelete(message, deleteMessage);
+    }
+
+
+    @SneakyThrows
     public void publishCheckPaidReceived(Long chatId, Integer messageId) {
         String answer = config.getPublishCheckPaidAnswer();
         if (chatService.getPaidPublishStatus(chatId)) {

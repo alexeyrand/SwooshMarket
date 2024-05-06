@@ -30,6 +30,18 @@ public class BotConfig {
     @Value("${answer.command.sdek}")
     private String sdekAnswer;
 
+    @Value("${answer.command.sdekOrder}")
+    private String sdekOrderAnswer;
+
+    @Value("${answer.command.sdekOrder1}")
+    private String sdekOrder1Answer;
+
+    @Value("${answer.command.sdekOrder2}")
+    private String sdekOrder2Answer;
+
+    @Value("${answer.command.sdekOrder3}")
+    private String sdekOrder3Answer;
+
     @Value("${answer.command.publish}")
     private String publishAnswer;
 
