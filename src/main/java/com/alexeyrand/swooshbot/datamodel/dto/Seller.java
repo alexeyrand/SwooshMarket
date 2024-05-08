@@ -1,4 +1,4 @@
-package com.alexeyrand.swooshbot.datamodel.entity;
+package com.alexeyrand.swooshbot.datamodel.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

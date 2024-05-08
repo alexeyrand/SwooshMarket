@@ -22,26 +22,26 @@ public class Chat {
 
     Long chatId;
 
-    /*
+    /**
     Состояние блокировки потока
      */
     @Builder.Default
     Boolean block = false;
 
-    /*
+    /**
     Состояние пользователя
      */
     @Builder.Default
     State state = NO_WAITING;
 
-    /*
+    /**
     Оплачена ли услуга "публикация вне очереди"
     */
     @Builder.Default
     Boolean paidPublishStatus = false;
 
-    /*
-    Оплачена ли услуга "публикация вне очереди"
+    /**
+    Оплачена ли услуга "оформление накладной СДЕК"
     */
     @Builder.Default
     Boolean sdekStatus = false;

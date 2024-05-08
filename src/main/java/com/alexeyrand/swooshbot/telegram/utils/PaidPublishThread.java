@@ -55,7 +55,7 @@ public class PaidPublishThread implements Runnable {
             chatService.updateBlock(chatId, true);
 
         } else {
-            telegramBot.publishAlbum(chatId, text, username);
+            telegramBot.publishAlbum(chatId, text, username, true);
             chatService.updateBlock(chatId, true);
             chatService.updatePaidPublishStatus(chatId, false);
 

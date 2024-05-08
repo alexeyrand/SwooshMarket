@@ -34,6 +34,11 @@ public class ChatService {
         return chat.getPaidPublishStatus();
     }
 
+    public Boolean getSdekStatus(Long chatId) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        return chat.getSdekStatus();
+    }
+
     public Boolean isBlock(Long chatId) {
         Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
         return chat.getBlock();

@@ -1,7 +1,7 @@
 package com.alexeyrand.swooshbot.telegram.core;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.entity.Photo;
+import com.alexeyrand.swooshbot.datamodel.entity.publish.Photo;
 import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.datamodel.service.PhotoService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
@@ -68,7 +68,6 @@ public class Publish {
 
     public void PublishPaid(Message message, Long chatId) {
         String text = message.getCaption();
-
         if (!message.hasPhoto()) {
             SendMessage responseMessage = new SendMessage();
             responseMessage.setChatId(chatId);

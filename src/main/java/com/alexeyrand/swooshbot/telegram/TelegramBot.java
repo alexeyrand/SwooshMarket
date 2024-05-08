@@ -3,18 +3,19 @@ package com.alexeyrand.swooshbot.telegram;
 import com.alexeyrand.swooshbot.api.client.RequestSender;
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.datamodel.entity.Chat;
-import com.alexeyrand.swooshbot.datamodel.entity.Photo;
+import com.alexeyrand.swooshbot.datamodel.entity.publish.Photo;
 import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
 import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.datamodel.service.PhotoService;
+import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
 import com.alexeyrand.swooshbot.telegram.core.Publish;
+import com.alexeyrand.swooshbot.telegram.core.Sdek;
 import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.*;
 import com.alexeyrand.swooshbot.telegram.service.MessageHandler;
 import com.alexeyrand.swooshbot.telegram.service.MessageSender;
 import com.alexeyrand.swooshbot.telegram.service.QueryHandler;
 import com.alexeyrand.swooshbot.telegram.service.Utils;
-import com.alexeyrand.swooshbot.telegram.utils.Flag;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final ChatService chatService;
     private final ChatRepository chatRepository;
     private final PhotoService photoService;
+    private final SdekOrderRequestService sdekOrderRequestService;
     private final Publish publish;
+    private final Sdek sdek;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
                        BotConfig config, MessageSender messageSender, MessageHandler messageHandler,
@@ -73,7 +76,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                        ChatRepository chatRepository,
                        PhotoService photoService,
                        BuyInline buyInline,
-                       Publish publish) throws TelegramApiException {
+                       Publish publish,
+                       Sdek sdek,
+                       SdekOrderRequestService sdekOrderRequestService) throws TelegramApiException {
         super(botToken);
         this.config = config;
         this.messageSender = messageSender;
@@ -89,6 +94,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.photoService = photoService;
         this.buyInline = buyInline;
         this.publish = publish;
+        this.sdek = sdek;
+        this.sdekOrderRequestService = sdekOrderRequestService;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Меню"));
         this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), "ru"));
@@ -127,8 +134,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (state.equals(NO_WAITING) && message.hasText()) {
                 switch (message.getText()) {
                     case "/start" -> messageHandler.StartCommandReceived(chatId, messageId);
-                    case "/reg" -> RequestSender.getRegions(URI.create("https://api.edu.cdek.ru/v2/location/regions"));
-                    case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
+//                    case "/reg" -> RequestSender.getPVZ(URI.create("https://api.edu.cdek.ru/v2/location/regions"), "MSK205");
+//                    case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
                     default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
                 }
             } else if (state.equals(WAIT_FREE_PUBLISH)) {
@@ -136,7 +143,21 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (state.equals(WAIT_PAID_PUBLISH)) {
                 publish.PublishPaid(message, chatId);
             } else if (state.equals(WAIT_SDEK_TARIFF)) {
-                return;
+                sdek.setTariff(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_WEIGHT)) {
+                sdek.setWeight(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_DIMENSIONS)) {
+                sdek.setDimensions(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_ITEM_DESCRIPTION)) {
+                sdek.setItemDescription(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_FIO)) {
+                sdek.setFIO(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_TELEPHONE)) {
+                sdek.setTelephone(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_SHIPMENT_PVZ)) {
+                sdek.setShipmentPVZ(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_DELIVERY_PVZ)) {
+                sdek.setDeliveryPVZ(message, chatId, message.getText());
             } else if (!message.hasText() && message.hasPhoto()) {
                 messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }
@@ -157,9 +178,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
             State state = chatService.getState(chatId);
 
-
-
             switch (data) {
+                case "menu" -> messageHandler.StartCommandReceived(chatId, messageId);
                 case "publish" -> queryHandler.publishReceived(chatId, messageId);
 //                case "legit" -> sendMessageWithInlineSdek(chatId);
                 case "sdek" -> queryHandler.sdekReceived(chatId, messageId);
@@ -246,7 +266,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     @SneakyThrows
-    public void publishAlbum(Long chatId, String text, String username) {
+    public void publishAlbum(Long chatId, String text, String username, Boolean paid) {
+        String paidAnswer = paid ? "\n\n!!! Публикация вне очереди !!!" : "";
         List<InputMedia> inputsMedia = new ArrayList<>();
         SendMediaGroup mediaGroup = new SendMediaGroup();
         List<Photo> photos = photoService.findAllPhotosByChatId(chatId);
@@ -256,7 +277,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 InputMedia inputPhoto = new InputMediaPhoto();
                 inputPhoto.setMedia(url);
                 if (photos.get(0).getPhoto().equals(url)) {
-                    inputPhoto.setCaption(text + "\n\nПродавец - @" + username);
+                    inputPhoto.setCaption(text + "\n\nПродавец: @" + username + paidAnswer);
                     inputPhoto.setParseMode(ParseMode.MARKDOWN);
                 }
                 inputsMedia.add(inputPhoto);
@@ -268,7 +289,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             SendPhoto sendPhoto = new SendPhoto();
             sendPhoto.setPhoto(new InputFile(photos.get(0).getPhoto()));
             sendPhoto.setChatId(channelId);
-            sendPhoto.setCaption(text + "\n\nПродавец - @" + username);
+            sendPhoto.setCaption(text + "\n\nПродавец: @" + username + paidAnswer);
             sendPhoto.setParseMode(ParseMode.MARKDOWN);
             execute(sendPhoto);
         }
@@ -281,5 +302,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         return execute(invoiceLink);
     }
 
+    public void deleteMessage(Long chatId, Integer messageId) throws TelegramApiException {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+        execute(deleteMessage);
+    }
 
 }

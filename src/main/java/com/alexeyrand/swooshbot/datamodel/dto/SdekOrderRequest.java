@@ -1,4 +1,4 @@
-package com.alexeyrand.swooshbot.datamodel.entity;
+package com.alexeyrand.swooshbot.datamodel.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -13,9 +13,6 @@ import java.util.List;
 @Builder
 @ToString
 public class SdekOrderRequest {
-    Integer type;   ///
-
-
     Integer tariff_code;   ///
     String comment;         ///
     String shipment_point;  ///
@@ -29,8 +26,4 @@ public class SdekOrderRequest {
     Location from_location;
     Location to_location;
     List<Package> packages;
-
-
-
-
 }

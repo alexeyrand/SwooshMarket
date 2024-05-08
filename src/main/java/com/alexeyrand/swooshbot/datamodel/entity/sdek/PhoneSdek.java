@@ -1,22 +1,21 @@
-package com.alexeyrand.swooshbot.datamodel.entity;
+package com.alexeyrand.swooshbot.datamodel.entity.sdek;
 
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
 @Getter
 @Setter
 @Builder
-@Table(name = "photo")
+@ToString
+@Entity
+@Table(name = "phone")
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Photo {
-    @Id
+public class PhoneSdek {
+    @jakarta.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
-    Long Id;
-
+    Long id;
     Long chatId;
-
-    String photo;
+    String number;
 }

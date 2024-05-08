@@ -26,8 +26,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.File;
 import java.util.List;
 
-import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
-import static com.alexeyrand.swooshbot.telegram.enums.State.WAIT_PAID_PUBLISH;
+import static com.alexeyrand.swooshbot.telegram.enums.State.*;
 
 @Component
 @RequiredArgsConstructor
@@ -104,18 +103,19 @@ public class QueryHandler {
     public void sdekReceived(Long chatId, Integer messageId) {
 
         File image = ResourceUtils.getFile("classpath:" + "static/images/sdek.jpg");
-        InlineKeyboardMarkup inline = sdekInline.getSdekInline();
         String answer = config.getSdekAnswer();
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
         photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(answer);
-        photo.setReplyMarkup(inline);
+        photo.setReplyMarkup(sdekInline.getSdekInline());
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId);
+
+        chatService.updateState(chatId, NO_WAITING);
 
         telegramBot.sendPhoto(photo, deleteMessage);
     }
@@ -125,6 +125,11 @@ public class QueryHandler {
 
         InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
         String answer = config.getSdekOrderAnswer();
+        if (chatService.getSdekStatus(chatId)) {
+            answer = answer + "\n\n*Статус оплаты*:\n✅ Оплачено, услуга доступна";
+        } else {
+            answer = answer + "\n\nСтатус оплаты:\n❌ Не оплачено";
+        }
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
@@ -136,22 +141,25 @@ public class QueryHandler {
         deleteMessage.setMessageId(messageId);
 
         telegramBot.sendMessageWithDelete(message, deleteMessage);
+
+        chatService.updateState(chatId, NO_WAITING);
     }
 
     @SneakyThrows
     public void sdekOrder1Received(Long chatId, Integer messageId) {
 
-        InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
         String answer = config.getSdekOrder1Answer();
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
         message.setText(answer);
-        message.setReplyMarkup(inline);
+        message.setReplyMarkup(sdekInline.getSdekBackInline());
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId);
+
+        chatService.updateState(chatId, WAIT_SDEK_TARIFF);
 
         telegramBot.sendMessageWithDelete(message, deleteMessage);
     }
@@ -163,14 +171,14 @@ public class QueryHandler {
         if (chatService.getPaidPublishStatus(chatId)) {
             answer = answer + "\n\n*Статус оплаты*:\nОплачено, услуга доступна ✅";
         } else {
-            answer = answer + "\n\nСтатус оплаты:\nНе оплачено, услуга недоступна ❌";
+            answer = answer + "\n\nСтатус оплаты:\nНе оплачено ❌";
         }
         CreateInvoiceLink invoiceLink = new CreateInvoiceLink(
                 "Публикация вне очереди",
                 "Публикация размещается в канал * сразу после того, как пост пройдет проверку модератором",
                 chatId.toString(),
                 config.getPaymentsToken(),
-                "RUB", List.of(new LabeledPrice("Цена", 222 * 100)));
+                "RUB", List.of(new LabeledPrice("Цена", 150 * 100)));
         invoiceLink.setNeedEmail(true);
         invoiceLink.setNeedName(true);
         String response = telegramBot.buy(invoiceLink);

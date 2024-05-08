@@ -59,7 +59,7 @@ public class Flag implements Runnable {
             chatService.updateBlock(chatId, true);
 
         } else {
-            telegramBot.publishAlbum(chatId, text, username);
+            telegramBot.publishAlbum(chatId, text, username, false);
             chatService.updateBlock(chatId, true);
 
             SendMessage message = new SendMessage();
