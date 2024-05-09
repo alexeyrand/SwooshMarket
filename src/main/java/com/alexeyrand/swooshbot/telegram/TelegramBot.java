@@ -135,7 +135,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 switch (message.getText()) {
                     case "/start" -> messageHandler.StartCommandReceived(chatId, messageId);
 //                    case "/reg" -> RequestSender.getPVZ(URI.create("https://api.edu.cdek.ru/v2/location/regions"), "MSK205");
-//                    case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
+                    case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
                     default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
                 }
             } else if (state.equals(WAIT_FREE_PUBLISH)) {
