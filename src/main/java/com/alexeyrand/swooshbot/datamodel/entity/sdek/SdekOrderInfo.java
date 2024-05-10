@@ -25,6 +25,8 @@ public class SdekOrderInfo {
     //    String comment;         ///
     String shipmentPoint;  ///
     String deliveryPoint;  ///
+    String shipmentCity;
+    String deliveryCity;
     Date dateInvoice;      ///
     String shipperName;    ///
     String shipperAddress; ///

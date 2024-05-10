@@ -228,14 +228,13 @@ public class Sdek {
     @SneakyThrows
     public void setShipmentPVZ(Message message, Long chatId, String PVZCode) {
 
-        String URL = "https://api.cdek.ru/v2/deliverypoints";
-        String result = requestSender.getPVZ(URI.create(URL + "?code=" + PVZCode.toUpperCase()), PVZCode);
-        String name = result.split("\",")[1].split(":\"")[1];
+        String result = requestSender.getPVZ(PVZCode);
 
-        if (!result.isEmpty()) {
-
+        if (!result.equals("[]") && !result.isEmpty()) {
+            String name = result.split("\",")[1].split(":\"")[1];
             SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
-            sdekOrderInfo.setShipmentPoint(PVZCode);
+            sdekOrderInfo.setShipmentPoint(PVZCode.toUpperCase());
+            sdekOrderInfo.setShipmentCity(name.split(", ")[1]);
             sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Адрес ПВЗ отправки: " + name);
             sdekOrderRequestService.save(sdekOrderInfo);
 
@@ -249,10 +248,13 @@ public class Sdek {
             telegramBot.justSendMessage(sendMessage);
 
             chatService.updateState(chatId, State.WAIT_SDEK_DELIVERY_PVZ);
+
+
+
         } else {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
-            sendMessage.setText("По коду \"" + PVZCode + "\" не найдено ни одного офиса. Уточните код ПВЗ на сайте \"https://www.cdek.ru/ru/offices/\"");
+            sendMessage.setText("По коду \"" + PVZCode.toUpperCase() + "\" не найдено ни одного офиса. Уточните код ПВЗ на сайте \"https://www.cdek.ru/ru/offices/\"");
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
         }
@@ -261,14 +263,13 @@ public class Sdek {
     @SneakyThrows
     public void setDeliveryPVZ(Message message, Long chatId, String PVZCode) {
 
-        String URL = "https://api.cdek.ru/v2/deliverypoints";
-        String result = requestSender.getPVZ(URI.create(URL + "?code=" + PVZCode.toUpperCase()), PVZCode);
-        String name = result.split("\",")[1].split(":\"")[1];
+        String result = requestSender.getPVZ(PVZCode);
 
-        if (!result.isEmpty()) {
-
+        if (!result.equals("[]") && !result.isEmpty()) {
+            String name = result.split("\",")[1].split(":\"")[1];
             SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
-            sdekOrderInfo.setDeliveryPoint(PVZCode);
+            sdekOrderInfo.setDeliveryPoint(PVZCode.toUpperCase());
+            sdekOrderInfo.setDeliveryCity(name.split(", ")[1]);
             sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Адрес ПВЗ получения: " + name);
             sdekOrderRequestService.save(sdekOrderInfo);
 
@@ -281,11 +282,13 @@ public class Sdek {
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
 
-            chatService.updateState(chatId, State.WAIT_SDEK_TELEPHONE);
+            chatService.updateState(chatId, State.NO_WAITING);
+
+            requestSender.getCityCode(chatId);
         } else {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
-            sendMessage.setText("По коду \"" + PVZCode + "\" не найдено ни одного офиса. Уточните код ПВЗ на сайте \"https://www.cdek.ru/ru/offices/\"");
+            sendMessage.setText("По коду \"" + PVZCode.toUpperCase() + "\" не найдено ни одного офиса. Уточните код ПВЗ на сайте \"https://www.cdek.ru/ru/offices/\"");
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
         }
@@ -297,5 +300,9 @@ public class Sdek {
             SdekOrderInfo sdekOrderInfo = SdekOrderInfo.builder().chatId(chatId).build();
             sdekOrderRequestService.save(sdekOrderInfo);
         }
+    }
+
+    private void calculateTheCostOrder() {
+
     }
 }

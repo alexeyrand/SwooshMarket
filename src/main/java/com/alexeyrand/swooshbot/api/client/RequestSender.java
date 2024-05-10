@@ -2,6 +2,8 @@ package com.alexeyrand.swooshbot.api.client;
 
 import com.alexeyrand.swooshbot.datamodel.dto.*;
 import com.alexeyrand.swooshbot.datamodel.dto.Package;
+import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
+import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -11,15 +13,19 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -27,41 +33,67 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 @RequiredArgsConstructor
 public class RequestSender {
 
-    public String getPVZ(URI url, String PVZCode) throws JsonProcessingException {
-        String token = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJvcmRlcjphbGwiLCJwYXltZW50OmFsbCJdLCJleHAiOjE3MTUyMTAxMDQsImF1dGhvcml0aWVzIjpbImZ1bGwtbmFtZTrQk9GD0YDQsdC40Ycg0JTQvNC40YLRgNC40Lkg0JDQu9C10LrRgdCw0L3QtNGA0L7QstC40YciLCJjbGllbnQtY2l0eTrQnNC-0YHQutCy0LAsINCc0L7RgdC60LLQsCIsInNoYXJkLWlkOnJ1LTA0IiwiY2xpZW50LWVtYWlsczp5by15by0xMjNAbWFpbC5ydSx5by15by0xMjNAbWFpbC5ydSIsImNvbnRyYWdlbnQtdXVpZDpmZjU4Y2MxNC04MjdlLTQ2MzItOTRkZS02MGI1NzA0NjVhZjEiLCJhY2NvdW50LWxhbmc6cnVzIiwiY2xpZW50LWlkLWVjNTpmZjU4Y2MxNC04MjdlLTQ2MzItOTRkZS02MGI1NzA0NjVhZjEiLCJjb250cmFjdC1pZDpjODBkZDlkNy0xOGM0LTRlNDUtYTVlZi1mNTlmMjBlMGE3NWUiLCJhcGktdmVyc2lvbjoxLjEiLCJhY2NvdW50LXV1aWQ6MmUxOGU0ZGQtNGMxMC00ZGZmLWI2ZjEtNWYyZDRkNWMwYjg2IiwiY29udHJhY3Q6U1otVFlVTTE0Ni0xMCIsInNvbGlkLWFkZHJlc3M6ZmFsc2UiLCJjbGllbnQtaWQtZWM0Om51bGwiXSwianRpIjoiajZLQjNMajhwdlp2VWlZeG5mOWJOY25zSElRIiwiY2xpZW50X2lkIjoiM1BnWDVhZWNQUjI5UDFHbHpWemRXalZva0FpYnJ1VWUifQ.Ge_rcPWxsie0b_bywBk1inT57kelAfH2cuZy1ljodfinTFr9x9fyBomxhPtJ0hL9WvyRlh1N_EDyqH6nYytXn7O2Zw38gGwsE9aQ1pi5KSEBxNjl3DUnha6FBwCm5nbyKA5DAMpoZfbec438nyL8OJ_5kEdyGmtXzAUaGboLFgCQ32S1fvJqlkzSpHDLrwAH7buKpow6xbH-J3RhgGYyE1pgETesvL4r7WjcRXdnEWHBOhjKlIRRLy4ei_MtxvAd4sJID2BwxxVvThsBldcWLQrLrT-6WNn9geUa5WITle562kbwohBQ4hbm4inF1dNzhsyrwnRciCBs4YCiDNEgyQ";
+    private final SdekOrderRequestService sdekOrderRequest;
 
+    @SneakyThrows
+    public String getPVZ(String PVZCode) throws JsonProcessingException {
+        String URL = "https://api.edu.cdek.ru/v2/deliverypoints";
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.of(5, SECONDS))
-                //.authenticator()
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
+                .uri(URI.create(URL + "?code=" + PVZCode.toUpperCase()))
                 .timeout(Duration.of(5, SECONDS))
                 .GET()
-                .header("Authorization", token)
+                .header("Authorization", getToken())
                 .build();
-        CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        try {
-            if (responseFuture.get().statusCode() == 200) {
-                String response = responseFuture.get().body();
-                if (!response.isEmpty()) {
-                    return response;
-                }
-                return "";
+        if (response.statusCode() == 200) {
+            String responseBody = response.body();
+            if (!responseBody.isEmpty()) {
+                return responseBody;
             }
-        } catch (ExecutionException | InterruptedException e) {
-            System.out.println(e.getMessage());
-            throw new RuntimeException(e);
+            return "";
         }
         return "";
     }
-@SneakyThrows
+
+    @SneakyThrows
+    public void getCityCode(Long chatId) throws JsonProcessingException {
+        String URL = "https://api.edu.cdek.ru/v2/location/cities?size=1&page=0";
+        SdekOrderInfo sdekOrderInfo = sdekOrderRequest.findSdekOrderRequestByChatId(chatId).orElseThrow();
+        String shipmentCity = sdekOrderInfo.getShipmentCity();
+        String deliveryCity = sdekOrderInfo.getDeliveryCity();
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.of(5, SECONDS))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(URL + "&city=" + shipmentCity))
+                .timeout(Duration.of(5, SECONDS))
+                .GET()
+                .header("Authorization", getToken())
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            String responseBody = response.body();
+            if (!responseBody.isEmpty()) {
+                sdekOrderInfo.setShipmentCity("r");
+            }
+
+        }
+
+    }
+
+
+    @SneakyThrows
     public static void createOrder(URI url) throws JsonProcessingException {
-        System.out.println(getToken());
+
         final ObjectMapper mapper = new ObjectMapper();
-        String token = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJvcmRlcjphbGwiLCJwYXltZW50OmFsbCJdLCJleHAiOjE3MTQ5NDAwNjMsImF1dGhvcml0aWVzIjpbInNoYXJkLWlkOnJ1LTAxIiwiY2xpZW50LWNpdHk60J3QvtCy0L7RgdC40LHQuNGA0YHQuiwg0J3QvtCy0L7RgdC40LHQuNGA0YHQutCw0Y8g0L7QsdC70LDRgdGC0YwiLCJjb250cmFjdDrQmNCcLdCg0KQt0JPQm9CTLTIyIiwiYWNjb3VudC1sYW5nOnJ1cyIsImFwaS12ZXJzaW9uOjEuMSIsImFjY291bnQtdXVpZDplOTI1YmQwZi0wNWE2LTRjNTYtYjczNy00Yjk5YzE0ZjY2OWEiLCJjbGllbnQtaWQtZWM1OmVkNzVlY2Y0LTMwZWQtNDE1My1hZmU5LWViODBiYjUxMmYyMiIsImNvbnRyYWN0LWlkOmRlNDJjYjcxLTZjOGMtNGNmNS04MjIyLWNmYjY2MDQ0ZThkZiIsImNsaWVudC1pZC1lYzQ6MTQzNDgyMzEiLCJjb250cmFnZW50LXV1aWQ6ZWQ3NWVjZjQtMzBlZC00MTUzLWFmZTktZWI4MGJiNTEyZjIyIiwic29saWQtYWRkcmVzczpmYWxzZSIsImZ1bGwtbmFtZTrQotC10YHRgtC40YDQvtCy0LDQvdC40LUg0JjQvdGC0LXQs9GA0LDRhtC40Lgg0JjQnCJdLCJqdGkiOiJxLWFKQzYzQ3U4Vnl2ZmM3UkVXN0RDcVVKMEUiLCJjbGllbnRfaWQiOiJFTXNjZDZyOUpuRmlRM2JMb3lqSlk2ZU03OEpySmNlSSJ9.a2lnhttvAba1_8wDgD2lT0TbD8kfpzQEVVXXL1y1fKuPfP9ojkOZH6qvp23UfRQYWcz72GHxvq2am8CD7uGLv47fGsDrKGKsftI6hY8y5dXcZj4VHjQfZPnUqLc6VdQ8MKnX9qlfSiYROb4cXEb9y5KYw2qz2vZb8Y0-f7jndvJkPM_cBqHnHDECZrC6aOJ8rIEWx4sFQGuEUdzyrCrXHDCVlFTlktWG9j38f-enkyLS45q9U__odnMqecRz0Kgjj1sp6ujo1j5-SzdeURY1nI5q-ftnxa8IJgXQImfdGvS246LWVaV_yjCbVbwgJ1qFAiyb-otNqphXRJzHxF06pg";
+
         Phone phone = new Phone("+79150187948");
         Item item = new Item("Товар", "123213", new Money(213f), 213f, 100f, 123);
         Package pckage = new Package("1", 100, 100, 100, 100, List.of(item));
@@ -91,14 +123,14 @@ public class RequestSender {
                 .uri(url)
                 .timeout(Duration.of(5, SECONDS))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonOrderRequest))
-                .header("Authorization", token)
+                .header("Authorization", getToken())
                 .header("Content-Type", "application/json")
                 .build();
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
 
         try {
             //if (responseFuture.get().statusCode() == 200) {
-                System.out.println(responseFuture.get().body());
+            System.out.println(responseFuture.get().body());
             //}
         } catch (ExecutionException | InterruptedException e) {
             System.out.println(e.getMessage());
@@ -106,25 +138,36 @@ public class RequestSender {
         }
     }
 
+//    public String calculateTheCostOrder(Long chatId) {
+//        SdekOrderInfo sdekOrderInfo = sdekOrderRequest.findSdekOrderRequestByChatId(chatId).orElseThrow();
+//
+//    }
+
     private static String getToken() throws IOException, InterruptedException {
-        String grant_type = "client_credentials";
-        String client_id = "EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI";
-            String client_secret = "PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3kG";
+        String params = Map.of(
+                        "grant_type", "client_credentials",
+                        "client_id", "EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI",
+                        "client_secret", "PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3kG")
+                .entrySet()
+                .stream()
+                .map(entry -> Stream.of(
+                                URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8),
+                                URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                        .collect(Collectors.joining("="))
+                ).collect(Collectors.joining("&"));
 
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.of(5, SECONDS))
-                //.authenticator()
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create("https://api.edu.cdek.ru/v2/oauth/token?grant_type=" + grant_type + "&client_id=" + client_id +"&client_secret=" + client_secret))
                 .uri(URI.create("https://api.edu.cdek.ru/v2/oauth/token?parameters"))
                 .timeout(Duration.of(5, SECONDS))
-
                 .POST(HttpRequest.BodyPublishers.ofString("{grant_type: \"client_credentials\", client_id: \"EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI\", client_secret: \"PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3kG\"}"))
+                .POST(HttpRequest.BodyPublishers.ofString(params))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .build();
         HttpResponse<String> responseFuture = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return responseFuture.body();
+        return "Bearer " + responseFuture.body().split("\"")[3];
     }
 }
