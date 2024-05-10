@@ -5,6 +5,7 @@ import com.alexeyrand.swooshbot.datamodel.dto.Package;
 import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
 import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -62,6 +63,7 @@ public class RequestSender {
 
     @SneakyThrows
     public void getCityCode(Long chatId) throws JsonProcessingException {
+        final ObjectMapper mapper = new ObjectMapper();
         String URL = "https://api.edu.cdek.ru/v2/location/cities?size=1&page=0";
         SdekOrderInfo sdekOrderInfo = sdekOrderRequest.findSdekOrderRequestByChatId(chatId).orElseThrow();
         String shipmentCity = sdekOrderInfo.getShipmentCity();
@@ -79,7 +81,9 @@ public class RequestSender {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 200) {
-            String responseBody = response.body();
+            String responseBody = response.body().substring(1, response.body().length()-1);
+            City cityCode = mapper.readValue(responseBody, City.class);
+            System.out.println(cityCode);
             if (!responseBody.isEmpty()) {
                 sdekOrderInfo.setShipmentCity("r");
             }
