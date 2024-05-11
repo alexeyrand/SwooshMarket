@@ -11,11 +11,11 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PublishCheckPaidInline {
+public class PublishPaidInline {
 
     private final ChatService chatService;
 
-    public InlineKeyboardMarkup getPublishCheckPaidInline(String response, Long  chatId) {
+    public InlineKeyboardMarkup getPublishPaidInline(String response, Long  chatId) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 

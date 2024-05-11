@@ -5,6 +5,7 @@ import com.alexeyrand.swooshbot.datamodel.dto.*;
 import com.alexeyrand.swooshbot.datamodel.dto.calculator.*;
 import com.alexeyrand.swooshbot.datamodel.dto.calculator.Location;
 import com.alexeyrand.swooshbot.datamodel.dto.calculator.Package;
+import com.alexeyrand.swooshbot.datamodel.entity.Chat;
 import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
 import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -90,29 +91,34 @@ public class RequestSender {
         return -1;
     }
 
-
     @SneakyThrows
-    public static void createOrder(URI url) throws JsonProcessingException {
+    public void createOrder(Long chatId) throws JsonProcessingException {
 
         final ObjectMapper mapper = new ObjectMapper();
+        URI url = URI.create("https://api.edu.cdek.ru/v2/orders");
 
-        Phone phone = new Phone("+79150187948");
-        Item item = new Item("Товар", "123213", new Money(213f), 213f, 100f, 123);
-        //Package pckage = new Package("1", 100, 100, 100, 100, List.of(item));
+        SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
+        Phone phone = new Phone(sdekOrderInfo.getRecipientNumber());
+        Item item = new Item(sdekOrderInfo.getItemName(), "111111", new Money(0f), 0f, sdekOrderInfo.getItemWeight(), 1);
+        com.alexeyrand.swooshbot.datamodel.dto.Package pckage = new com.alexeyrand.swooshbot.datamodel.dto.Package(
+                "1",
+                sdekOrderInfo.getPackageWeight(),
+                sdekOrderInfo.getPackageLength(),
+                sdekOrderInfo.getPackageWidth(),
+                sdekOrderInfo.getPackageHeight(),
+                List.of(item));
         SdekOrderRequest orderRequest = SdekOrderRequest.builder()
-                .tariff_code(136)
-                .comment("Тестовый заказ")
-                .shipment_point("ABK1")
-                .delivery_point("AST7")
-                //.date_invoice(new Date())
-                //.shipper_name()
-                //.shipper_address()
-                .delivery_recipient_cost(new Money(155.0f))
+                .tariff_code(sdekOrderInfo.getTariffCode())
+                .comment("Заказ через телеграм бот")
+                .shipment_point(sdekOrderInfo.getShipmentPoint())
+                .delivery_point(sdekOrderInfo.getDeliveryPoint())
+
+                //.delivery_recipient_cost(new Money(155.0f))
                 //.seller()
-                .recipient(new Contact("ContactName", List.of(phone)))
+                .recipient(new Contact(sdekOrderInfo.getRecipientName(), List.of(phone)))
                 //.from_location()
                 //.to_location()
-                //.packages(List.of(pckage))
+                .packages(List.of(pckage))
                 .build();
         String jsonOrderRequest = mapper.writeValueAsString(orderRequest);
 
@@ -140,7 +146,7 @@ public class RequestSender {
     }
 
     @SneakyThrows
-    public void calculateTheCostOrder(Long chatId, Integer shipmentCode, Integer deliveryCode) {
+    public CalculateCostResponse calculateTheCostOrder(Long chatId, Integer shipmentCode, Integer deliveryCode) {
         final ObjectMapper mapper = new ObjectMapper();
         SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
         String url = "https://api.edu.cdek.ru/v2/calculator/tarifflist";
@@ -174,8 +180,11 @@ public class RequestSender {
                 .header("Content-Type", "application/json")
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response);
-    }
+        if (!response.body().isEmpty()) {
+            return mapper.readValue(response.body(), CalculateCostResponse.class);
+        }
+        return null;
+        }
 
     private static String getToken() throws IOException, InterruptedException {
         String params = Map.of(

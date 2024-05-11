@@ -53,7 +53,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final Utils utils;
     private final SdekInline sdekInline;
     private final PublishInline publishInline;
-    private final BuyInline buyInline;
     private final MenuInline menuInline;
     private final QueryHandler queryHandler;
     private final MainMenuInline mainMenuInline;
@@ -75,7 +74,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                        ChatService chatService,
                        ChatRepository chatRepository,
                        PhotoService photoService,
-                       BuyInline buyInline,
                        Publish publish,
                        Sdek sdek,
                        SdekOrderRequestService sdekOrderRequestService) throws TelegramApiException {
@@ -92,7 +90,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.chatService = chatService;
         this.chatRepository = chatRepository;
         this.photoService = photoService;
-        this.buyInline = buyInline;
         this.publish = publish;
         this.sdek = sdek;
         this.sdekOrderRequestService = sdekOrderRequestService;
@@ -127,15 +124,19 @@ public class TelegramBot extends TelegramLongPollingBot {
             State state = chatService.getState(chatId);
 
             if (update.getMessage().hasSuccessfulPayment()) {
-
-                SuccessfulPayment successfulPayment = message.getSuccessfulPayment();
-                queryHandler.publishPaidReceived(chatId, messageId);
+                Chat chat = chatService.findWaitByChatId(chatId).orElseThrow();
+                if (chat.getState().equals(WAIT_SDEK_PAYMENT)) {
+                    sdek.createOrder(chatId);
+                } else if (chat.getState().equals(WAIT_PAID_PUBLISH)) {
+                    SuccessfulPayment successfulPayment = message.getSuccessfulPayment();
+                    queryHandler.publishPaidReceived(chatId, messageId);
+                }
 
             } else if (state.equals(NO_WAITING) && message.hasText()) {
                 switch (message.getText()) {
                     case "/start" -> messageHandler.StartCommandReceived(chatId, messageId);
 //                    case "/reg" -> RequestSender.getPVZ(URI.create("https://api.edu.cdek.ru/v2/location/regions"), "MSK205");
-                    case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
+                    //case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
                     default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
                 }
             } else if (state.equals(WAIT_FREE_PUBLISH)) {
@@ -203,7 +204,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         } else if (update.hasPreCheckoutQuery()) {
             PreCheckoutQuery checkoutQuery = update.getPreCheckoutQuery();
             execute(new AnswerPreCheckoutQuery(checkoutQuery.getId(), true, "error"));
-            ;
+
 
         }
     }

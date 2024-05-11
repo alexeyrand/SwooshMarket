@@ -3,6 +3,8 @@ package com.alexeyrand.swooshbot.telegram.core;
 import com.alexeyrand.swooshbot.api.client.RequestSender;
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.datamodel.dto.SdekOrderRequest;
+import com.alexeyrand.swooshbot.datamodel.dto.calculator.CalculateCostResponse;
+import com.alexeyrand.swooshbot.datamodel.dto.calculator.CostInfo;
 import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
 import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
@@ -16,15 +18,22 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.invoices.CreateInvoiceLink;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.payments.LabeledPrice;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
+import static com.alexeyrand.swooshbot.telegram.enums.State.WAIT_SDEK_PAYMENT;
 
 @Component
 @RequiredArgsConstructor
@@ -145,21 +154,21 @@ public class Sdek {
     @SneakyThrows
     public void setItemDescription(Message message, Long chatId, String description) {
 
-            SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
-            sdekOrderInfo.setItemName(description);
-            sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Описание товара: " + description);
-            sdekOrderRequestService.save(sdekOrderInfo);
+        SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
+        sdekOrderInfo.setItemName(description);
+        sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Описание товара: " + description);
+        sdekOrderRequestService.save(sdekOrderInfo);
 
-            telegramBot.deleteMessage(chatId, message.getMessageId());
-            telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
+        telegramBot.deleteMessage(chatId, message.getMessageId());
+        telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
 
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder5Answer());
-            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
-            telegramBot.justSendMessage(sendMessage);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder5Answer());
+        sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+        telegramBot.justSendMessage(sendMessage);
 
-            chatService.updateState(chatId, State.WAIT_SDEK_FIO);
+        chatService.updateState(chatId, State.WAIT_SDEK_FIO);
     }
 
     @SneakyThrows
@@ -250,7 +259,6 @@ public class Sdek {
             chatService.updateState(chatId, State.WAIT_SDEK_DELIVERY_PVZ);
 
 
-
         } else {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -273,16 +281,7 @@ public class Sdek {
             sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Адрес ПВЗ получения: " + name);
             sdekOrderRequestService.save(sdekOrderInfo);
 
-            telegramBot.deleteMessage(chatId, message.getMessageId());
-            telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
-
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder8Answer());
-            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
-            telegramBot.justSendMessage(sendMessage);
-
-            chatService.updateState(chatId, State.NO_WAITING);
+            chatService.updateState(chatId, NO_WAITING);
 
             String shipmentCity = sdekOrderInfo.getShipmentCity();
             String deliveryCity = sdekOrderInfo.getDeliveryCity();
@@ -290,8 +289,34 @@ public class Sdek {
             Integer shipmentCityCode = requestSender.getCityCode(chatId, shipmentCity);
             Integer deliveryCityCode = requestSender.getCityCode(chatId, deliveryCity);
 
-            requestSender.calculateTheCostOrder(chatId, shipmentCityCode, deliveryCityCode);
+            CalculateCostResponse calculateCostResponse = requestSender.calculateTheCostOrder(chatId, shipmentCityCode, deliveryCityCode);
+            if (calculateCostResponse != null) {
+                List<CostInfo> costInfoList = calculateCostResponse.getTariff_codes();
+                Float cost = costInfoList.stream().filter(
+                        c -> c.getTariff_code().equals(sdekOrderInfo.getTariffCode())
+                ).findFirst().orElseThrow().getDelivery_sum();
 
+                telegramBot.deleteMessage(chatId, message.getMessageId());
+                telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
+
+                CreateInvoiceLink invoiceLink = new CreateInvoiceLink(
+                        "Офомрление накладной",
+                        "После оплаты вам направлен трек номер",
+                        chatId.toString(),
+                        config.getPaymentsToken(),
+                        "RUB", List.of(new LabeledPrice("Цена", Math.round(cost * 1.5f) * 100)));
+                invoiceLink.setNeedEmail(true);
+                invoiceLink.setNeedName(true);
+                invoiceLink.setPayload("SDEK");
+                String response = telegramBot.buy(invoiceLink);
+
+                SendMessage sendMessage1 = new SendMessage();
+                sendMessage1.setChatId(chatId);
+                sendMessage1.setText(sdekOrderInfo.getInfo() + "\n\nЦена доставки: " + cost * 1.5 + "руб.");
+                sendMessage1.setReplyMarkup(sdekInline.getSdekPayInline(response, chatId));
+                telegramBot.justSendMessage(sendMessage1);
+                chatService.updateState(chatId, WAIT_SDEK_PAYMENT);
+            }
 
         } else {
             SendMessage sendMessage = new SendMessage();
@@ -300,6 +325,11 @@ public class Sdek {
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
         }
+    }
+
+    @SneakyThrows
+    public void createOrder(Long chatId) {
+        requestSender.createOrder(chatId);
     }
 
 

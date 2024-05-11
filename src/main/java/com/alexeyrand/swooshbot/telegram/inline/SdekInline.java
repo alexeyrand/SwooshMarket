@@ -17,7 +17,7 @@ import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
 @RequiredArgsConstructor
 public class SdekInline {
     private final BotConfig config;
-
+private final ChatService chatService;
 
 
 
@@ -89,4 +89,39 @@ public class SdekInline {
         return markupInline;
     }
 
+    public InlineKeyboardMarkup getSdekPayInline(String response, Long  chatId) {
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+
+        InlineKeyboardButton inlineKeyboardButton1;
+
+        InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
+        inlineKeyboardButton2.setText("Назад");
+        inlineKeyboardButton2.setCallbackData("sdek");
+
+        if (chatService.getSdekStatus(chatId)) {
+            inlineKeyboardButton1 = new InlineKeyboardButton();
+            inlineKeyboardButton1.setText("Оформить заказ");
+            inlineKeyboardButton1.setCallbackData("sdek/order/create");
+        } else {
+            inlineKeyboardButton1 = new InlineKeyboardButton();
+            inlineKeyboardButton1.setText("Оплатить");
+            inlineKeyboardButton1.setCallbackData("pppublish/paid/pay");
+            inlineKeyboardButton1.setUrl(response);
+            inlineKeyboardButton1.setPay(true);
+        }
+
+        rowInline1.add(inlineKeyboardButton1);
+        rowInline2.add(inlineKeyboardButton2);
+
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+
+        markupInline.setKeyboard(rowsInline);
+
+        return markupInline;
+    }
 }

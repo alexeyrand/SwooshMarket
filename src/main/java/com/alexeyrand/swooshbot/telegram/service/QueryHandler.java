@@ -3,7 +3,7 @@ package com.alexeyrand.swooshbot.telegram.service;
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
-import com.alexeyrand.swooshbot.telegram.inline.PublishCheckPaidInline;
+import com.alexeyrand.swooshbot.telegram.inline.PublishPaidInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishFreeInline;
 import com.alexeyrand.swooshbot.telegram.inline.PublishInline;
 import com.alexeyrand.swooshbot.telegram.inline.SdekInline;
@@ -21,7 +21,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.payments.LabeledPrice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.util.List;
@@ -40,7 +39,7 @@ public class QueryHandler {
     private final BotConfig config;
     private final Utils utils;
     private final ChatService chatService;
-    private final PublishCheckPaidInline publishCheckPaidInline;
+    private final PublishPaidInline publishPaidInline;
 
     @SneakyThrows
     public void publishReceived(Long chadId, Integer messageId) {
@@ -125,11 +124,11 @@ public class QueryHandler {
 
         InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
         String answer = config.getSdekOrderAnswer();
-        if (chatService.getSdekStatus(chatId)) {
-            answer = answer + "\n\n*Статус оплаты*:\n✅ Оплачено, услуга доступна";
-        } else {
-            answer = answer + "\n\nСтатус оплаты:\n❌ Не оплачено";
-        }
+//        if (chatService.getSdekStatus(chatId)) {
+//            answer = answer + "\n\n*Статус оплаты*:\n✅ Оплачено, услуга доступна";
+//        } else {
+//            answer = answer + "\n\nСтатус оплаты:\n❌ Не оплачено";
+//        }
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
@@ -188,7 +187,7 @@ public class QueryHandler {
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
         message.setText(answer);
-        message.setReplyMarkup(publishCheckPaidInline.getPublishCheckPaidInline(response, chatId));
+        message.setReplyMarkup(publishPaidInline.getPublishPaidInline(response, chatId));
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);

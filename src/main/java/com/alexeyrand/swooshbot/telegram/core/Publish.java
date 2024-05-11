@@ -31,7 +31,7 @@ public class Publish {
     private final Utils utils;
     private final ChatService chatService;
     private final PhotoService photoService;
-    private final PublishCheckPaidInline publishCheckPaidInline;
+    private final PublishPaidInline publishPaidInline;
     private final QueryHandler queryHandler;
     private final MenuInline menuInline;
     private final MainMenuInline mainMenuInline;
