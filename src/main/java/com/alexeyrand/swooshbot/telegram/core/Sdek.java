@@ -284,7 +284,15 @@ public class Sdek {
 
             chatService.updateState(chatId, State.NO_WAITING);
 
-            requestSender.getCityCode(chatId);
+            String shipmentCity = sdekOrderInfo.getShipmentCity();
+            String deliveryCity = sdekOrderInfo.getDeliveryCity();
+
+            Integer shipmentCityCode = requestSender.getCityCode(chatId, shipmentCity);
+            Integer deliveryCityCode = requestSender.getCityCode(chatId, deliveryCity);
+
+            requestSender.calculateTheCostOrder(chatId, shipmentCityCode, deliveryCityCode);
+
+
         } else {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);

@@ -17,6 +17,7 @@ public class City {
     private String country;
     private String region;
     private Integer region_code;
+    private String sub_region;
     private Float longitude;
     private Float latitude;
     private String time_zone;
