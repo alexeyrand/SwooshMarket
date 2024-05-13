@@ -83,7 +83,7 @@ public class Sdek {
         try {
             Integer weight = Integer.parseInt(weightStr.trim());
             SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
-            sdekOrderInfo.setPackageWidth(weight);
+            sdekOrderInfo.setPackageWeight(weight);
             sdekOrderInfo.setItemWeight(Float.parseFloat(weight.toString()));
             sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Вес посылки: " + weight + " г.");
             sdekOrderRequestService.save(sdekOrderInfo);
@@ -119,7 +119,7 @@ public class Sdek {
                 Integer h = Integer.parseInt(dims[2]);
                 SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
                 sdekOrderInfo.setPackageLength(l);
-                sdekOrderInfo.setPackageWeight(w);
+                sdekOrderInfo.setPackageWidth(w);
                 sdekOrderInfo.setPackageHeight(h);
                 sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Длина: " + l + " см.\n✅ Ширина: " + w + " см.\n✅ Высота: " + h + " см.");
                 sdekOrderRequestService.save(sdekOrderInfo);
@@ -257,8 +257,6 @@ public class Sdek {
             telegramBot.justSendMessage(sendMessage);
 
             chatService.updateState(chatId, State.WAIT_SDEK_DELIVERY_PVZ);
-
-
         } else {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -290,12 +288,12 @@ public class Sdek {
             Integer deliveryCityCode = requestSender.getCityCode(chatId, deliveryCity);
 
             CalculateCostResponse calculateCostResponse = requestSender.calculateTheCostOrder(chatId, shipmentCityCode, deliveryCityCode);
-            if (calculateCostResponse != null) {
+            if (calculateCostResponse != null && !calculateCostResponse.getTariff_codes().isEmpty()) {
                 List<CostInfo> costInfoList = calculateCostResponse.getTariff_codes();
                 Float cost = costInfoList.stream().filter(
                         c -> c.getTariff_code().equals(sdekOrderInfo.getTariffCode())
                 ).findFirst().orElseThrow().getDelivery_sum();
-
+                cost = cost * 1.5f;
                 telegramBot.deleteMessage(chatId, message.getMessageId());
                 telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
 
@@ -304,18 +302,17 @@ public class Sdek {
                         "После оплаты вам направлен трек номер",
                         chatId.toString(),
                         config.getPaymentsToken(),
-                        "RUB", List.of(new LabeledPrice("Цена", Math.round(cost * 1.5f) * 100)));
+                        "RUB", List.of(new LabeledPrice("Цена", Math.round(cost) * 100)));
                 invoiceLink.setNeedEmail(true);
                 invoiceLink.setNeedName(true);
-                invoiceLink.setPayload("SDEK");
+                invoiceLink.setPayload("sdek");
                 String response = telegramBot.buy(invoiceLink);
 
                 SendMessage sendMessage1 = new SendMessage();
                 sendMessage1.setChatId(chatId);
-                sendMessage1.setText(sdekOrderInfo.getInfo() + "\n\nЦена доставки: " + cost * 1.5 + "руб.");
+                sendMessage1.setText(sdekOrderInfo.getInfo() + "\n\nЦена доставки: " + cost + "руб.");
                 sendMessage1.setReplyMarkup(sdekInline.getSdekPayInline(response, chatId));
                 telegramBot.justSendMessage(sendMessage1);
-                chatService.updateState(chatId, WAIT_SDEK_PAYMENT);
             }
 
         } else {
@@ -330,6 +327,12 @@ public class Sdek {
     @SneakyThrows
     public void createOrder(Long chatId) {
         requestSender.createOrder(chatId);
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Заказ создан.");
+        telegramBot.justSendMessage(sendMessage);
+        chatService.updateState(chatId, NO_WAITING);
     }
 
 

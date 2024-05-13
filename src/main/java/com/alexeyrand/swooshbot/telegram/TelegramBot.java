@@ -128,7 +128,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 if (chat.getState().equals(WAIT_SDEK_PAYMENT)) {
                     sdek.createOrder(chatId);
                 } else if (chat.getState().equals(WAIT_PAID_PUBLISH)) {
-                    SuccessfulPayment successfulPayment = message.getSuccessfulPayment();
                     queryHandler.publishPaidReceived(chatId, messageId);
                 }
 
@@ -202,9 +201,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                 default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }
         } else if (update.hasPreCheckoutQuery()) {
-            PreCheckoutQuery checkoutQuery = update.getPreCheckoutQuery();
-            execute(new AnswerPreCheckoutQuery(checkoutQuery.getId(), true, "error"));
 
+            PreCheckoutQuery checkoutQuery = update.getPreCheckoutQuery();
+            if (checkoutQuery.getInvoicePayload().equals("publish")) {
+                chatService.updateState(update.getPreCheckoutQuery().getFrom().getId(), WAIT_PAID_PUBLISH);
+            } else if (checkoutQuery.getInvoicePayload().equals("sdek")) {
+                chatService.updateState(update.getPreCheckoutQuery().getFrom().getId(), WAIT_SDEK_PAYMENT);
+            }
+            execute(new AnswerPreCheckoutQuery(checkoutQuery.getId(), true, "error"));
 
         }
     }

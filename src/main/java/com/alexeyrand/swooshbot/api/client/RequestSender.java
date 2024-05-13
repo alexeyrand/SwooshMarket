@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,23 +51,24 @@ public class RequestSender {
                 .GET()
                 .header("Authorization", getToken())
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() == 200) {
-            String responseBody = response.body();
-            if (!responseBody.isEmpty()) {
-                return responseBody;
+        String response = "";
+        try {
+            HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (httpResponse.statusCode() == 200) {
+                response = httpResponse.body();
             }
-            return "";
+        } catch (Exception e) {
+            response = "";
+        } finally {
+            client.close();
         }
-        return "";
+        return response;
     }
 
     @SneakyThrows
     public Integer getCityCode(Long chatId, String city) throws JsonProcessingException {
         final ObjectMapper mapper = new ObjectMapper();
         String URL = "https://api.edu.cdek.ru/v2/location/cities?size=1&page=0";
-        SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
 
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.of(5, SECONDS))
@@ -78,17 +80,22 @@ public class RequestSender {
                 .GET()
                 .header("Authorization", getToken())
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() == 200) {
-            String responseBody = response.body().substring(1, response.body().length() - 1);
-            City cityCode = mapper.readValue(responseBody, City.class);
-            if (!responseBody.isEmpty()) {
-                return cityCode.getCode();
+        Integer response = null;
+        try {
+            HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (httpResponse.statusCode() == 200) {
+                String responseBody = httpResponse.body().substring(1, httpResponse.body().length() - 1);
+                City cityCode = mapper.readValue(responseBody, City.class);
+                response = cityCode.getCode();
             }
-
+        } catch (Exception e) {
+            response = -1;
+        } finally {
+            client.close();
         }
-        return -1;
+        return response;
     }
 
     @SneakyThrows
@@ -112,12 +119,7 @@ public class RequestSender {
                 .comment("Заказ через телеграм бот")
                 .shipment_point(sdekOrderInfo.getShipmentPoint())
                 .delivery_point(sdekOrderInfo.getDeliveryPoint())
-
-                //.delivery_recipient_cost(new Money(155.0f))
-                //.seller()
                 .recipient(new Contact(sdekOrderInfo.getRecipientName(), List.of(phone)))
-                //.from_location()
-                //.to_location()
                 .packages(List.of(pckage))
                 .build();
         String jsonOrderRequest = mapper.writeValueAsString(orderRequest);
@@ -136,12 +138,14 @@ public class RequestSender {
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
 
         try {
-            //if (responseFuture.get().statusCode() == 200) {
-            System.out.println(responseFuture.get().body());
-            //}
+            if (responseFuture.get().statusCode() == 200) {
+                System.out.println((responseFuture.get().body()));
+            }
         } catch (ExecutionException | InterruptedException e) {
             System.out.println(e.getMessage());
             throw new RuntimeException(e);
+        } finally {
+            client.close();
         }
     }
 
@@ -184,7 +188,7 @@ public class RequestSender {
             return mapper.readValue(response.body(), CalculateCostResponse.class);
         }
         return null;
-        }
+    }
 
     private static String getToken() throws IOException, InterruptedException {
         String params = Map.of(

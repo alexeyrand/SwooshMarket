@@ -95,7 +95,7 @@ public class QueryHandler {
         telegramBot.sendMessageWithDelete(message, deleteMessage);
 
         chatService.updatePaidPublishStatus(chatId, true);
-        chatService.updateState(chatId, WAIT_PAID_PUBLISH);
+
     }
 
     @SneakyThrows
@@ -180,6 +180,7 @@ public class QueryHandler {
                 "RUB", List.of(new LabeledPrice("Цена", 150 * 100)));
         invoiceLink.setNeedEmail(true);
         invoiceLink.setNeedName(true);
+        invoiceLink.setPayload("publish");
         String response = telegramBot.buy(invoiceLink);
 
 
@@ -194,6 +195,8 @@ public class QueryHandler {
         deleteMessage.setMessageId(messageId);
         chatService.updateBlock(chatId, true);
         telegramBot.sendMessageAndWait(message, deleteMessage);
+
+        //chatService.updateState(chatId, WAIT_PAID_PUBLISH);
     }
 
     public void publishCheckPaidReceifved(Long chatId, Integer messageId) {}
