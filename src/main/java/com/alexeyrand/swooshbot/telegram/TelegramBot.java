@@ -1,13 +1,12 @@
 package com.alexeyrand.swooshbot.telegram;
 
-import com.alexeyrand.swooshbot.api.client.RequestSender;
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.datamodel.entity.Chat;
 import com.alexeyrand.swooshbot.datamodel.entity.publish.Photo;
 import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
 import com.alexeyrand.swooshbot.datamodel.service.ChatService;
 import com.alexeyrand.swooshbot.datamodel.service.PhotoService;
-import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
+import com.alexeyrand.swooshbot.datamodel.service.SdekOrderInfoService;
 import com.alexeyrand.swooshbot.telegram.core.Publish;
 import com.alexeyrand.swooshbot.telegram.core.Sdek;
 import com.alexeyrand.swooshbot.telegram.enums.State;
@@ -36,7 +35,6 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.payments.*;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +57,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final ChatService chatService;
     private final ChatRepository chatRepository;
     private final PhotoService photoService;
-    private final SdekOrderRequestService sdekOrderRequestService;
+    private final SdekOrderInfoService sdekOrderInfoService;
     private final Publish publish;
     private final Sdek sdek;
 
@@ -76,7 +74,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                        PhotoService photoService,
                        Publish publish,
                        Sdek sdek,
-                       SdekOrderRequestService sdekOrderRequestService) throws TelegramApiException {
+                       SdekOrderInfoService sdekOrderInfoService) throws TelegramApiException {
         super(botToken);
         this.config = config;
         this.messageSender = messageSender;
@@ -92,7 +90,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.photoService = photoService;
         this.publish = publish;
         this.sdek = sdek;
-        this.sdekOrderRequestService = sdekOrderRequestService;
+        this.sdekOrderInfoService = sdekOrderInfoService;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Меню"));
         this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), "ru"));
@@ -112,6 +110,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             Message message = update.getMessage();
             Long chatId = message.getChatId();
             Integer messageId = message.getMessageId();
+            String username = message.getChat().getUserName();
 
 
             if (chatService.findWaitByChatId(chatId).isEmpty()) {
@@ -119,6 +118,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         Chat.builder()
                                 .chatId(chatId)
                                 .state(NO_WAITING)
+                                .username(username)
                                 .build());
             }
             State state = chatService.getState(chatId);
@@ -134,8 +134,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (state.equals(NO_WAITING) && message.hasText()) {
                 switch (message.getText()) {
                     case "/start" -> messageHandler.StartCommandReceived(chatId, messageId);
-//                    case "/reg" -> RequestSender.getPVZ(URI.create("https://api.edu.cdek.ru/v2/location/regions"), "MSK205");
-                    //case "/order" -> RequestSender.createOrder(URI.create("https://api.edu.cdek.ru/v2/orders"));
                     default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
                 }
             } else if (state.equals(WAIT_FREE_PUBLISH)) {

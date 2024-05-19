@@ -5,15 +5,18 @@ import com.alexeyrand.swooshbot.datamodel.dto.*;
 import com.alexeyrand.swooshbot.datamodel.dto.calculator.*;
 import com.alexeyrand.swooshbot.datamodel.dto.calculator.Location;
 import com.alexeyrand.swooshbot.datamodel.dto.calculator.Package;
-import com.alexeyrand.swooshbot.datamodel.entity.Chat;
+import com.alexeyrand.swooshbot.datamodel.dto.sdek.SdekOrderInfoResponse;
 import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
-import com.alexeyrand.swooshbot.datamodel.service.SdekOrderRequestService;
+import com.alexeyrand.swooshbot.datamodel.service.SdekOrderInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,6 +26,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +40,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 @RequiredArgsConstructor
 public class RequestSender {
 
-    private final SdekOrderRequestService sdekOrderRequestService;
+    private final SdekOrderInfoService sdekOrderInfoService;
 
     @SneakyThrows
     public String getPVZ(String PVZCode) throws JsonProcessingException {
@@ -99,12 +103,12 @@ public class RequestSender {
     }
 
     @SneakyThrows
-    public void createOrder(Long chatId) throws JsonProcessingException {
+    public String createOrder(Long chatId) throws JsonProcessingException {
 
         final ObjectMapper mapper = new ObjectMapper();
         URI url = URI.create("https://api.edu.cdek.ru/v2/orders");
 
-        SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
+        SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
         Phone phone = new Phone(sdekOrderInfo.getRecipientNumber());
         Item item = new Item(sdekOrderInfo.getItemName(), "111111", new Money(0f), 0f, sdekOrderInfo.getItemWeight(), 1);
         com.alexeyrand.swooshbot.datamodel.dto.Package pckage = new com.alexeyrand.swooshbot.datamodel.dto.Package(
@@ -136,10 +140,13 @@ public class RequestSender {
                 .header("Content-Type", "application/json")
                 .build();
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-
+        JsonNode jsonNode = mapper.readTree(responseFuture.get().body());
+        String uuid;
         try {
-            if (responseFuture.get().statusCode() == 200) {
-                System.out.println((responseFuture.get().body()));
+            if (responseFuture.get().statusCode() == 200 || responseFuture.get().statusCode() == 202) {
+                uuid = jsonNode.get("entity").get("uuid").asText("");
+            } else {
+                uuid = "";
             }
         } catch (ExecutionException | InterruptedException e) {
             System.out.println(e.getMessage());
@@ -147,12 +154,13 @@ public class RequestSender {
         } finally {
             client.close();
         }
+        return uuid;
     }
 
     @SneakyThrows
     public CalculateCostResponse calculateTheCostOrder(Long chatId, Integer shipmentCode, Integer deliveryCode) {
         final ObjectMapper mapper = new ObjectMapper();
-        SdekOrderInfo sdekOrderInfo = sdekOrderRequestService.findSdekOrderRequestByChatId(chatId).orElseThrow();
+        SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
         String url = "https://api.edu.cdek.ru/v2/calculator/tarifflist";
 
         CalculateCostRequest calculateCostRequest = CalculateCostRequest
@@ -186,6 +194,64 @@ public class RequestSender {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (!response.body().isEmpty()) {
             return mapper.readValue(response.body(), CalculateCostResponse.class);
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    public SdekOrderInfoResponse getOrderInfo(String uuid) {
+        final ObjectMapper mapper = new ObjectMapper();
+        URI url = URI.create("https://api.edu.cdek.ru/v2/orders/" + uuid);
+
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.of(5, SECONDS))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .timeout(Duration.of(5, SECONDS))
+                .GET()
+                .header("Authorization", getToken())
+                .header("Content-Type", "application/json")
+                .build();
+        HttpResponse<String> responseFuture = client.send(request, HttpResponse.BodyHandlers.ofString());
+        JsonNode jsonNode = mapper.readTree(responseFuture.body());
+        List<String> warnList = new ArrayList<>();
+        List<String> erList = new ArrayList<>();
+        try {
+            if (responseFuture.statusCode() == 200) {
+                JsonNode orderNumberNode = jsonNode.get("entity").get("cdek_number");
+                String orderNumber = orderNumberNode != null ? orderNumberNode.asText() : "-";
+                ArrayNode stateArray = (ArrayNode) jsonNode.get("requests");
+                String state = stateArray.get(0).get("state").asText();
+                String date = stateArray.get(0).get("date_time").asText().split("\\+")[0].replace('T', ' ');
+                ArrayNode warnings = (ArrayNode) stateArray.get(0).get("warnings");
+                if (warnings != null) {
+                    for (JsonNode w : warnings) {
+                        warnList.add("\n" + w.get("code").asText() + "!\n" + w.get("message"));
+                    }
+                }
+                ArrayNode errors = (ArrayNode) stateArray.get(0).get("errors");
+                if (errors != null) {
+                    for (JsonNode w : errors) {
+                        erList.add("\n" + w.get("code").asText() + "!\n" + w.get("message"));
+                    }
+                }
+
+                return SdekOrderInfoResponse.builder()
+                        .orderNumber(orderNumber)
+                        .status(state)
+                        .date(date)
+                        .warnings(warnList)
+                        .errors(erList)
+                        .build();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            client.close();
         }
         return null;
     }

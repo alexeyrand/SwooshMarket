@@ -7,6 +7,7 @@ import lombok.*;
 import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
 import static com.alexeyrand.swooshbot.telegram.enums.State.WAIT_FREE_PUBLISH;
 
+/** Таблица чатов в телеграм */
 @Entity
 @Getter
 @Setter
@@ -18,31 +19,27 @@ public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    Long Id;
+    private Long Id;
 
-    Long chatId;
+    /** id чата в телеграме (чат == пользователь) */
+    private Long chatId;
 
-    /**
-    Состояние блокировки потока
-     */
+    /** username пользователя в телеграме */
+    private String username;
+    /** Состояние блокировки потока */
+
     @Builder.Default
-    Boolean block = false;
+    private Boolean block = false;
 
-    /**
-    Состояние пользователя
-     */
+    /** Состояние пользователя */
     @Builder.Default
-    State state = NO_WAITING;
+    private State state = NO_WAITING;
 
-    /**
-    Оплачена ли услуга "публикация вне очереди"
-    */
+    /** Оплачена ли услуга "публикация вне очереди" */
     @Builder.Default
-    Boolean paidPublishStatus = false;
+    private Boolean paidPublishStatus = false;
 
-    /**
-    Оплачена ли услуга "оформление накладной СДЕК"
-    */
+    /** Оплачена ли услуга "оформление накладной СДЕК" */
     @Builder.Default
-    Boolean sdekStatus = false;
+    private Boolean sdekStatus = false;
 }

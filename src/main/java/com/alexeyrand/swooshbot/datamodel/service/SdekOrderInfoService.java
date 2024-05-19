@@ -1,7 +1,7 @@
 package com.alexeyrand.swooshbot.datamodel.service;
 
 import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
-import com.alexeyrand.swooshbot.datamodel.repository.SdekOrderRequestRepository;
+import com.alexeyrand.swooshbot.datamodel.repository.SdekOrderInfoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,14 +11,14 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class SdekOrderRequestService {
-    private final SdekOrderRequestRepository sdekOrderRequestRepository;
+public class SdekOrderInfoService {
+    private final SdekOrderInfoRepository sdekOrderInfoRepository;
 
-    public Optional<SdekOrderInfo> findSdekOrderRequestByChatId(Long chatId) {
-        return sdekOrderRequestRepository.findByChatId(chatId);
+    public Optional<SdekOrderInfo> findSdekOrderInfoByChatId(Long chatId) {
+        return sdekOrderInfoRepository.findByChatId(chatId);
     }
     public void save(SdekOrderInfo sdekOrderInfo) {
-        sdekOrderRequestRepository.save(sdekOrderInfo);
+        sdekOrderInfoRepository.save(sdekOrderInfo);
     }
 
 }

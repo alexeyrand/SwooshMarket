@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface SdekOrderRequestRepository extends JpaRepository<SdekOrderInfo, Long> {
+public interface SdekOrderInfoRepository extends JpaRepository<SdekOrderInfo, Long> {
     Optional<SdekOrderInfo> findByChatId(Long chatId);
 }
