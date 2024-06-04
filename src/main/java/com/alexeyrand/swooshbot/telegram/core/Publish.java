@@ -1,9 +1,9 @@
 package com.alexeyrand.swooshbot.telegram.core;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.entity.publish.Photo;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
-import com.alexeyrand.swooshbot.datamodel.service.PhotoService;
+import com.alexeyrand.swooshbot.model.entity.publish.Photo;
+import com.alexeyrand.swooshbot.api.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.PhotoService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.inline.*;
 import com.alexeyrand.swooshbot.telegram.service.QueryHandler;

@@ -1,7 +1,7 @@
 package com.alexeyrand.swooshbot.telegram.utils;
 
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
-import com.alexeyrand.swooshbot.datamodel.service.PhotoService;
+import com.alexeyrand.swooshbot.api.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.PhotoService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.inline.MainMenuInline;
 import com.alexeyrand.swooshbot.telegram.inline.MenuInline;

@@ -1,14 +1,15 @@
 package com.alexeyrand.swooshbot.telegram;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.entity.Chat;
-import com.alexeyrand.swooshbot.datamodel.entity.publish.Photo;
-import com.alexeyrand.swooshbot.datamodel.repository.ChatRepository;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
-import com.alexeyrand.swooshbot.datamodel.service.PhotoService;
-import com.alexeyrand.swooshbot.datamodel.service.SdekOrderInfoService;
+import com.alexeyrand.swooshbot.model.entity.Chat;
+import com.alexeyrand.swooshbot.model.entity.publish.Photo;
+import com.alexeyrand.swooshbot.api.repository.ChatRepository;
+import com.alexeyrand.swooshbot.api.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.PhotoService;
+import com.alexeyrand.swooshbot.api.service.SdekOrderInfoService;
 import com.alexeyrand.swooshbot.telegram.core.Publish;
 import com.alexeyrand.swooshbot.telegram.core.Sdek;
+import com.alexeyrand.swooshbot.telegram.core.Settings;
 import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.*;
 import com.alexeyrand.swooshbot.telegram.service.MessageHandler;
@@ -60,6 +61,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final SdekOrderInfoService sdekOrderInfoService;
     private final Publish publish;
     private final Sdek sdek;
+    private final Settings setting;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
                        BotConfig config, MessageSender messageSender, MessageHandler messageHandler,
@@ -74,6 +76,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                        PhotoService photoService,
                        Publish publish,
                        Sdek sdek,
+                       Settings setting,
                        SdekOrderInfoService sdekOrderInfoService) throws TelegramApiException {
         super(botToken);
         this.config = config;
@@ -90,6 +93,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.photoService = photoService;
         this.publish = publish;
         this.sdek = sdek;
+        this.setting = setting;
         this.sdekOrderInfoService = sdekOrderInfoService;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Меню"));
@@ -148,6 +152,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sdek.setDimensions(message, chatId, message.getText());
             } else if (state.equals(WAIT_SDEK_ITEM_DESCRIPTION)) {
                 sdek.setItemDescription(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_SENDER_FIO)) {
+                sdek.setSenderFIO(message, chatId, message.getText());
+            } else if (state.equals(WAIT_SDEK_SENDER_TELEPHONE)) {
+                sdek.setSenderTelephone(message, chatId, message.getText());
             } else if (state.equals(WAIT_SDEK_FIO)) {
                 sdek.setFIO(message, chatId, message.getText());
             } else if (state.equals(WAIT_SDEK_TELEPHONE)) {
@@ -158,7 +166,20 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sdek.setDeliveryPVZ(message, chatId, message.getText());
             } else if (!message.hasText() && message.hasPhoto()) {
                 messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            } else if (state.equals(WAIT_EDIT_MAIN_MENU)) {
+                setting.editMainMenu(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_1)) {
+                setting.edit2(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_2)) {
+                setting.edit3(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_3)) {
+                setting.edit4(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_4)) {
+                setting.edit1(chatId, messageId, message.getText());
             }
+
+
         } else if (update.hasCallbackQuery()) {
 
             CallbackQuery query = update.getCallbackQuery();
@@ -195,6 +216,33 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 case "sdek/order" -> queryHandler.sdekOrderReceived(chatId, messageId);
                 case "sdek/order/1" -> queryHandler.sdekOrder1Received(chatId, messageId);
+
+
+                case "settings" -> queryHandler.settings1(chatId, messageId);
+                case "settings/text" -> queryHandler.settings2(chatId, messageId);
+                case "settings/text/publish" -> queryHandler.settings3(chatId, messageId);
+                case "settings/text/cdek" -> queryHandler.settings4(chatId, messageId);
+
+                case "settings/text/menu" -> setting.showTextMainMenu(chatId, messageId, data);
+                case "settings/text/menu/edit" -> setting.editMainMenu(chatId, messageId, data);
+
+                case "settings/text/publish/1",
+                        "settings/text/publish/2",
+                        "settings/text/publish/3",
+                        "settings/text/publish/4" -> setting.showTextPublish(chatId, messageId, data);
+
+
+                case "settings/text/publish/edit/1" -> setting.edit1(chatId, messageId, data);
+                case "settings/text/publish/edit/2" -> setting.edit2(chatId, messageId, data);
+                case "settings/text/publish/edit/3" -> setting.edit3(chatId, messageId, data);
+                case "settings/text/publish/edit/4" -> setting.edit4(chatId, messageId, data);
+
+
+                case "settings/text/cdek/1",
+                        "settings/text/cdek/2" -> setting.showTextCdek(chatId, messageId, data);
+
+                case "settings/text/cdek/edit/1" -> setting.cdekEdit1(chatId, messageId, data);
+                case "settings/text/cdek/edit/2" -> setting.cdekEdit2(chatId, messageId, data);
 
                 default -> messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
             }

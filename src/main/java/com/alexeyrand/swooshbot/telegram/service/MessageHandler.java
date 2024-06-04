@@ -1,7 +1,7 @@
 package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.inline.MenuInline;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class MessageHandler {
     @SneakyThrows
     public void StartCommandReceived(Long chatId, Integer messageId) {
         String answer = config.getHelpCommand();
-        InlineKeyboardMarkup inline = menuInline.getMenuInline();
+        InlineKeyboardMarkup inline = menuInline.getMenuInline(chatId);
         File image = ResourceUtils.getFile("classpath:" + "static/images/menu.jpg");
 
         SendPhoto photo = new SendPhoto();

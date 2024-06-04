@@ -1,19 +1,17 @@
 package com.alexeyrand.swooshbot.api.client;
 
-import com.alexeyrand.swooshbot.datamodel.dto.*;
+import com.alexeyrand.swooshbot.model.dto.*;
 
-import com.alexeyrand.swooshbot.datamodel.dto.calculator.*;
-import com.alexeyrand.swooshbot.datamodel.dto.calculator.Location;
-import com.alexeyrand.swooshbot.datamodel.dto.calculator.Package;
-import com.alexeyrand.swooshbot.datamodel.dto.sdek.SdekOrderInfoResponse;
-import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
-import com.alexeyrand.swooshbot.datamodel.service.SdekOrderInfoService;
+import com.alexeyrand.swooshbot.model.dto.calculator.*;
+import com.alexeyrand.swooshbot.model.dto.calculator.Location;
+import com.alexeyrand.swooshbot.model.dto.calculator.Package;
+import com.alexeyrand.swooshbot.model.dto.sdek.SdekOrderInfoResponse;
+import com.alexeyrand.swooshbot.model.entity.sdek.SdekOrderInfo;
+import com.alexeyrand.swooshbot.api.service.SdekOrderInfoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -46,7 +44,7 @@ public class RequestSender {
     public String getPVZ(String PVZCode) throws JsonProcessingException {
         String URL = "https://api.edu.cdek.ru/v2/deliverypoints";
         HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.of(5, SECONDS))
+                .connectTimeout(Duration.of(15, SECONDS))
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -63,8 +61,6 @@ public class RequestSender {
             }
         } catch (Exception e) {
             response = "";
-        } finally {
-            client.close();
         }
         return response;
     }
@@ -96,8 +92,6 @@ public class RequestSender {
             }
         } catch (Exception e) {
             response = -1;
-        } finally {
-            client.close();
         }
         return response;
     }
@@ -110,20 +104,23 @@ public class RequestSender {
 
         SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
         Phone phone = new Phone(sdekOrderInfo.getRecipientNumber());
+        Phone phoneSender = new Phone(sdekOrderInfo.getSenderNumber());
         Item item = new Item(sdekOrderInfo.getItemName(), "111111", new Money(0f), 0f, sdekOrderInfo.getItemWeight(), 1);
-        com.alexeyrand.swooshbot.datamodel.dto.Package pckage = new com.alexeyrand.swooshbot.datamodel.dto.Package(
+        com.alexeyrand.swooshbot.model.dto.Package pckage = new com.alexeyrand.swooshbot.model.dto.Package(
                 "1",
                 sdekOrderInfo.getPackageWeight(),
                 sdekOrderInfo.getPackageLength(),
                 sdekOrderInfo.getPackageWidth(),
                 sdekOrderInfo.getPackageHeight(),
                 List.of(item));
+
         SdekOrderRequest orderRequest = SdekOrderRequest.builder()
                 .tariff_code(sdekOrderInfo.getTariffCode())
                 .comment("Заказ через телеграм бот")
                 .shipment_point(sdekOrderInfo.getShipmentPoint())
                 .delivery_point(sdekOrderInfo.getDeliveryPoint())
                 .recipient(new Contact(sdekOrderInfo.getRecipientName(), List.of(phone)))
+                .sender(new Contact(sdekOrderInfo.getSenderName(), List.of(phoneSender)))
                 .packages(List.of(pckage))
                 .build();
         String jsonOrderRequest = mapper.writeValueAsString(orderRequest);
@@ -151,8 +148,6 @@ public class RequestSender {
         } catch (ExecutionException | InterruptedException e) {
             System.out.println(e.getMessage());
             throw new RuntimeException(e);
-        } finally {
-            client.close();
         }
         return uuid;
     }
@@ -250,8 +245,6 @@ public class RequestSender {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-        } finally {
-            client.close();
         }
         return null;
     }

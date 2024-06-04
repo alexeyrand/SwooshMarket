@@ -1,6 +1,6 @@
 package com.alexeyrand.swooshbot.telegram.inline;
 
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;

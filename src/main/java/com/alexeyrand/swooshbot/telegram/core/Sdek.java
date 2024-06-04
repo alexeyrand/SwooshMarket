@@ -2,15 +2,14 @@ package com.alexeyrand.swooshbot.telegram.core;
 
 import com.alexeyrand.swooshbot.api.client.RequestSender;
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.dto.SdekOrderRequest;
-import com.alexeyrand.swooshbot.datamodel.dto.calculator.CalculateCostResponse;
-import com.alexeyrand.swooshbot.datamodel.dto.calculator.CostInfo;
-import com.alexeyrand.swooshbot.datamodel.dto.sdek.SdekOrderInfoResponse;
-import com.alexeyrand.swooshbot.datamodel.entity.sdek.Order;
-import com.alexeyrand.swooshbot.datamodel.entity.sdek.SdekOrderInfo;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
-import com.alexeyrand.swooshbot.datamodel.service.OrderService;
-import com.alexeyrand.swooshbot.datamodel.service.SdekOrderInfoService;
+import com.alexeyrand.swooshbot.model.dto.calculator.CalculateCostResponse;
+import com.alexeyrand.swooshbot.model.dto.calculator.CostInfo;
+import com.alexeyrand.swooshbot.model.dto.sdek.SdekOrderInfoResponse;
+import com.alexeyrand.swooshbot.model.entity.sdek.Order;
+import com.alexeyrand.swooshbot.model.entity.sdek.SdekOrderInfo;
+import com.alexeyrand.swooshbot.api.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.OrderService;
+import com.alexeyrand.swooshbot.api.service.SdekOrderInfoService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.enums.TariffCode;
@@ -174,11 +173,82 @@ public class Sdek {
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
 
-            chatService.updateState(chatId, State.WAIT_SDEK_FIO);
+            chatService.updateState(chatId, State.WAIT_SDEK_SENDER_FIO);
         } catch (Exception e) {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText("Описание указано неверно.");
+            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+            telegramBot.justSendMessage(sendMessage);
+        }
+    }
+
+    @SneakyThrows
+    public void setSenderFIO(Message message, Long chatId, String FIO) {
+
+        if (FIO != null && (FIO.split(" ").length == 2 || FIO.split(" ").length == 3)) {
+            //TODO: setUpperCase FIO
+            SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
+            sdekOrderInfo.setSenderName(FIO);
+            sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ ФИО отправителя: " + FIO);
+            sdekOrderInfoService.save(sdekOrderInfo);
+
+            telegramBot.deleteMessage(chatId, message.getMessageId());
+            telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
+
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder6Answer());
+            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+            telegramBot.justSendMessage(sendMessage);
+
+            chatService.updateState(chatId, State.WAIT_SDEK_SENDER_TELEPHONE);
+
+        } else {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Фамилия, имя и отчество отправителя указаны неверно. Введите ФИО получателя через пробел (отчество не обязательно).");
+            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+            telegramBot.justSendMessage(sendMessage);
+        }
+    }
+
+    @SneakyThrows
+    public void setSenderTelephone(Message message, Long chatId, String number) {
+        String pattern = "^\\+\\d[0-9]{10}";
+        Pattern r = Pattern.compile(pattern);
+        try {
+            Matcher m = r.matcher(number);
+            if (m.matches()) {
+
+                SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
+                sdekOrderInfo.setSenderNumber(number);
+                sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Телефон отправителя: " + number);
+                sdekOrderInfoService.save(sdekOrderInfo);
+
+                telegramBot.deleteMessage(chatId, message.getMessageId());
+                telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
+
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(chatId);
+                sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder7Answer());
+                sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+                telegramBot.justSendMessage(sendMessage);
+
+                chatService.updateState(chatId, State.WAIT_SDEK_FIO);
+
+
+            } else {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(chatId);
+                sendMessage.setText("Номер телефона отправителя указан неверно. Введите номер телефона, соблюдая формат");
+                sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+                telegramBot.justSendMessage(sendMessage);
+            }
+        } catch (Exception e) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Номер телефона получателя указан неверно. Введите номер телефона, соблюдая формат");
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
         }
@@ -191,7 +261,7 @@ public class Sdek {
             //TODO: setUpperCase FIO
             SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
             sdekOrderInfo.setRecipientName(FIO);
-            sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ ФИО отправителя: " + FIO);
+            sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ ФИО получателя: " + FIO);
             sdekOrderInfoService.save(sdekOrderInfo);
 
             telegramBot.deleteMessage(chatId, message.getMessageId());
@@ -199,7 +269,7 @@ public class Sdek {
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
-            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder6Answer());
+            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder8Answer());
             sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
             telegramBot.justSendMessage(sendMessage);
 
@@ -224,7 +294,7 @@ public class Sdek {
 
                 SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
                 sdekOrderInfo.setRecipientNumber(number);
-                sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Телефон: " + number);
+                sdekOrderInfo.setInfo(sdekOrderInfo.getInfo() + "\n✅ Телефон получателя: " + number);
                 sdekOrderInfoService.save(sdekOrderInfo);
 
                 telegramBot.deleteMessage(chatId, message.getMessageId());
@@ -232,7 +302,7 @@ public class Sdek {
 
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(chatId);
-                sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder7Answer());
+                sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder9Answer());
                 sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
                 telegramBot.justSendMessage(sendMessage);
 
@@ -273,7 +343,7 @@ public class Sdek {
 
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(chatId);
-                sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder8Answer());
+                sendMessage.setText(sdekOrderInfo.getInfo() + "\n\n" + config.getSdekOrder10Answer());
                 sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
                 telegramBot.justSendMessage(sendMessage);
 
@@ -325,9 +395,10 @@ public class Sdek {
     @SneakyThrows
     public void createOrder(Long chatId) {
         String uuid = requestSender.createOrder(chatId);
+        Thread.sleep(3000);
         SdekOrderInfoResponse sdekOrderInfoResponse = requestSender.getOrderInfo(uuid);
         handlerSdekOrderInfoResponse(chatId, sdekOrderInfoResponse);
-        Thread.sleep(2000);
+
         String answer;
         if (sdekOrderInfoResponse != null) {
             answer = "Информаци о заказе:\n" +
@@ -339,6 +410,9 @@ public class Sdek {
         }
         if (sdekOrderInfoResponse.getWarn() != null) {
             answer = answer + "\n\nПредупреждения: \n" + sdekOrderInfoResponse.getWarn();
+        }
+        if (sdekOrderInfoResponse.getErr() != null) {
+            answer = answer + "\n\nОшибки: \n" + sdekOrderInfoResponse.getErr();
         }
         answer = answer + "\n\n\nuuid: " + uuid;
         SendMessage sendMessage = new SendMessage();
@@ -425,7 +499,11 @@ public class Sdek {
                     + " недоступен. Произошла переадресация на ближайший ПВЗ " + sdekOrderInfoResponse.getWarnings().get(0).split("to ")[1] + ".");
         }
         List<String> ers = sdekOrderInfoResponse.getErrors();
-
+        if (!ers.isEmpty() && ers.get(0).contains("The pick-up point")) {
+            sdekOrderInfoResponse.setErr("Некорректный заказ!\nВыбранный ПВЗ " + sdekOrderInfoResponse.getErrors().get(0).split("\"")[1]
+                    + " недоступен или не существует. Уточните информацию на сайте и укажите корректный код ПВЗ.");
+        }
+        sdekOrderInfoService.deleteByChatId(chatId);
     }
 
 

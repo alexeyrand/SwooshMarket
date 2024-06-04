@@ -1,17 +1,14 @@
 package com.alexeyrand.swooshbot.telegram.inline;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.ChatService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
 
 @Component
 @RequiredArgsConstructor

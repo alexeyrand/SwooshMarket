@@ -1,12 +1,9 @@
 package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
-import com.alexeyrand.swooshbot.datamodel.service.ChatService;
+import com.alexeyrand.swooshbot.api.service.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
-import com.alexeyrand.swooshbot.telegram.inline.PublishPaidInline;
-import com.alexeyrand.swooshbot.telegram.inline.PublishFreeInline;
-import com.alexeyrand.swooshbot.telegram.inline.PublishInline;
-import com.alexeyrand.swooshbot.telegram.inline.SdekInline;
+import com.alexeyrand.swooshbot.telegram.inline.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +34,7 @@ public class QueryHandler {
     private final PublishInline publishInline;
     private final PublishFreeInline publishFreeInline;
     private final BotConfig config;
-    private final Utils utils;
+    private final SettingsInline settingsInline;
     private final ChatService chatService;
     private final PublishPaidInline publishPaidInline;
 
@@ -199,7 +196,52 @@ public class QueryHandler {
         //chatService.updateState(chatId, WAIT_PAID_PUBLISH);
     }
 
-    public void publishCheckPaidReceifved(Long chatId, Integer messageId) {}
+    @SneakyThrows
+    public void settings1(Long chatId, Integer messageId) {
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText("Тут будет текст с пояснениями где что настраивать");
+        message.setReplyMarkup(settingsInline.getSettingsInline());
+        telegramBot.justSendMessage(message);
+    }
+
+    @SneakyThrows
+    public void settings2(Long chatId, Integer messageId) {
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText(
+                "1) Редактировать текст в главным меню\n" +
+                "2) Редактировать текст в разделе \"Публикация постов\"\n" +
+                "3) Редактировать текст в разделе \"Сдек\"");
+        message.setReplyMarkup(settingsInline.getSettingsTextInline());
+        telegramBot.justSendMessage(message);
+    }
+
+    @SneakyThrows
+    public void settings3(Long chatId, Integer messageId) {
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText("Ниже перечислены все сообщения бота из раздела ПУБЛИКАЦИИ содержащие текст который можно редактировать");
+        message.setReplyMarkup(settingsInline.getSettingsTextPublishInline());
+        telegramBot.justSendMessage(message);
+    }
+
+    @SneakyThrows
+    public void settings4(Long chatId, Integer messageId) {
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText("Ниже перечислены все сообщения бота из раздела СДЕК содержащие текст который можно редактировать");
+        message.setReplyMarkup(settingsInline.getSettingsTextCdekInline());
+        telegramBot.justSendMessage(message);
+    }
 
 
 
