@@ -18,12 +18,14 @@ public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long Id;
+    private Long id;
 
     /** id чата в телеграме (чат == пользователь) */
+    @Column(name = "chat_id")
     private Long chatId;
 
     /** username пользователя в телеграме */
+    @Column(name = "username")
     private String username;
     /** Состояние блокировки потока */
 
@@ -36,9 +38,11 @@ public class Chat {
 
     /** Оплачена ли услуга "публикация вне очереди" */
     @Builder.Default
+    @Column(name = "paid_publish_status")
     private Boolean paidPublishStatus = false;
 
     /** Оплачена ли услуга "оформление накладной СДЕК" */
     @Builder.Default
+    @Column(name = "cdek_status")
     private Boolean sdekStatus = false;
 }

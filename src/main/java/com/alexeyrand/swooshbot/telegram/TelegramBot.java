@@ -1,5 +1,6 @@
 package com.alexeyrand.swooshbot.telegram;
 
+import com.alexeyrand.swooshbot.api.service.PublishOrderInfoService;
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.model.entity.Chat;
 import com.alexeyrand.swooshbot.model.entity.publish.Photo;
@@ -7,6 +8,7 @@ import com.alexeyrand.swooshbot.api.repository.ChatRepository;
 import com.alexeyrand.swooshbot.api.service.ChatService;
 import com.alexeyrand.swooshbot.api.service.PhotoService;
 import com.alexeyrand.swooshbot.api.service.SdekOrderInfoService;
+import com.alexeyrand.swooshbot.model.entity.publish.PublishOrderInfo;
 import com.alexeyrand.swooshbot.telegram.core.Publish;
 import com.alexeyrand.swooshbot.telegram.core.Sdek;
 import com.alexeyrand.swooshbot.telegram.core.Settings;
@@ -37,6 +39,7 @@ import org.telegram.telegrambots.meta.api.objects.payments.*;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.alexeyrand.swooshbot.telegram.constants.TelegramConstants.channelId;
@@ -59,6 +62,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final ChatRepository chatRepository;
     private final PhotoService photoService;
     private final SdekOrderInfoService sdekOrderInfoService;
+    private final PublishOrderInfoService publishOrderInfoService;
     private final Publish publish;
     private final Sdek sdek;
     private final Settings setting;
@@ -77,7 +81,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                        Publish publish,
                        Sdek sdek,
                        Settings setting,
-                       SdekOrderInfoService sdekOrderInfoService) throws TelegramApiException {
+                       SdekOrderInfoService sdekOrderInfoService,
+                       PublishOrderInfoService publishOrderInfoService) throws TelegramApiException {
         super(botToken);
         this.config = config;
         this.messageSender = messageSender;
@@ -95,6 +100,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.sdek = sdek;
         this.setting = setting;
         this.sdekOrderInfoService = sdekOrderInfoService;
+        this.publishOrderInfoService = publishOrderInfoService;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Меню"));
         this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), "ru"));
@@ -170,13 +176,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (state.equals(WAIT_EDIT_MAIN_MENU)) {
                 setting.editMainMenu(chatId, messageId, message.getText());
             } else if (state.equals(WAIT_EDIT_PUBLISH_1)) {
-                setting.edit2(chatId, messageId, message.getText());
-            } else if (state.equals(WAIT_EDIT_PUBLISH_2)) {
-                setting.edit3(chatId, messageId, message.getText());
-            } else if (state.equals(WAIT_EDIT_PUBLISH_3)) {
-                setting.edit4(chatId, messageId, message.getText());
-            } else if (state.equals(WAIT_EDIT_PUBLISH_4)) {
                 setting.edit1(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_2)) {
+                setting.edit2(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_3)) {
+                setting.edit3(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_PUBLISH_4)) {
+                setting.edit4(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_CDEK_1)) {
+                setting.cdekEdit1(chatId, messageId, message.getText());
+            } else if (state.equals(WAIT_EDIT_CDEK_2)) {
+                setting.cdekEdit2(chatId, messageId, message.getText());
             }
 
 
@@ -317,7 +327,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     @SneakyThrows
-    public void publishAlbum(Long chatId, String text, String username, Boolean paid) {
+    public void publishAlbum(Long chatId, String text, String username, Boolean paid, Message message) {
         String paidAnswer = paid ? "\n\n!!! Публикация вне очереди !!!" : "";
         List<InputMedia> inputsMedia = new ArrayList<>();
         SendMediaGroup mediaGroup = new SendMediaGroup();
@@ -346,6 +356,14 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         photoService.deleteAllByChatId(chatId);
         chatService.updateState(chatId, NO_WAITING);
+        PublishOrderInfo publishOrderInfo = PublishOrderInfo
+                .builder()
+                .chatId(chatId)
+                .username(message.getChat().getUserName())
+                .orderType(paid ? "PAID" : "FREE")
+                .date(new Date())
+                .build();
+        publishOrderInfoService.save(publishOrderInfo);
     }
 
 
