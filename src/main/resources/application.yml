@@ -2,14 +2,15 @@
 
 
 bot:
-  name: SwooshTemplateBot
-  token: 6279864196:AAHrmKkP_jBzfRwgaZj_9Glk5ZQy2gVBTLU
-  payments_token: 381764678:TEST:83885
+  name: swoosh_bot
+  token: 7080945542:AAHX8FoUj4dwkdRpUHntuvhJRI_sAWMWjpw
+  payments_token: 381764678:TEST:86831
 
 spring:
 
   datasource:
-    url: jdbc:h2:file:C:/data/Swoosh
+#    url: jdbc:h2:file:C:/data/Swoosh
+    url: jdbc:h2:mem:testdb
     username: admin
     password: admin
     driverClassName: org.h2.Driver

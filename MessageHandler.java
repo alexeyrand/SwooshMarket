@@ -35,7 +35,7 @@ public class MessageHandler {
         String answer = config.getHelpCommand();
         InlineKeyboardMarkup inline = menuInline.getMenuInline(chatId);
 //        File image = ResourceUtils.getFile("classpath:" + "static/images/menu.jpg");
-        File image = new File("/root/SwooshBot/src/main/resources/static/images/menu.jpg");
+        File image = new File("/root/swooshbot/SwooshBot/src/main/resources/static/images");
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));

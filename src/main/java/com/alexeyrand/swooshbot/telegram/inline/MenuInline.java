@@ -58,7 +58,7 @@ public class MenuInline {
 
 
         rowsInline.add(rowInline1);
-        rowsInline.add(rowInline3);
+        //rowsInline.add(rowInline3);
 
         if (chatId.equals(658756678L)) {
             rowInline6.add(inlineKeyboardButton6);

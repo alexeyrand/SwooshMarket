@@ -40,7 +40,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishReceived(Long chadId, Integer messageId) {
-        File image = ResourceUtils.getFile("classpath:" + "static/images/publish.jpg");
+        File image = new File("/root/SwooshBot/src/main/resources/static/images/publish.jpg");
         String answer = config.getPublishAnswer();
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chadId);
@@ -97,8 +97,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void sdekReceived(Long chatId, Integer messageId) {
-
-        File image = ResourceUtils.getFile("classpath:" + "static/images/sdek.jpg");
+        File image = new File("/root/SwooshBot/src/main/resources/static/images/sdek.jpg");
         String answer = config.getSdekAnswer();
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
