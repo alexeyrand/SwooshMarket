@@ -60,7 +60,7 @@ public class MenuInline {
         rowsInline.add(rowInline1);
         //rowsInline.add(rowInline3);
 
-        if (chatId.equals(658756678L)) {
+        if (chatId.equals(658756678L)  || chatId.equals(430899374L)) {
             rowInline6.add(inlineKeyboardButton6);
             rowsInline.add(rowInline6);
         }
