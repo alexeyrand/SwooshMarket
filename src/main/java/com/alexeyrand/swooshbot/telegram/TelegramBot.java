@@ -210,10 +210,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             switch (data) {
                 case "menu" -> messageHandler.StartCommandReceived(chatId, messageId);
                 case "publish" -> queryHandler.publishReceived(chatId, messageId);
-//                case "legit" -> sendMessageWithInlineSdek(chatId);
+                case "legit" -> queryHandler.legitReceived(chatId, messageId);
                 case "sdek" -> queryHandler.sdekReceived(chatId, messageId);
-//                case "garant" -> sendMessageWithInlineSdek(chatId);
-//                case "adv" -> sendMessageWithInlineSdek(chatId);
+                case "garant" -> queryHandler.garantReceived(chatId, messageId);
+                case "adv" -> queryHandler.advertisingReceived(chatId, messageId);
 
                 case "publish/free" -> queryHandler.publishFreeReceived(chatId, messageId);
                 case "publish/back" -> messageHandler.StartCommandReceived(chatId, messageId);
@@ -226,7 +226,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 case "sdek/order" -> queryHandler.sdekOrderReceived(chatId, messageId);
                 case "sdek/order/1" -> queryHandler.sdekOrder1Received(chatId, messageId);
-
 
                 case "settings" -> queryHandler.settings1(chatId, messageId);
                 case "settings/text" -> queryHandler.settings2(chatId, messageId);

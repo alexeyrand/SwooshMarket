@@ -20,6 +20,9 @@ import org.telegram.telegrambots.meta.api.objects.payments.LabeledPrice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.alexeyrand.swooshbot.telegram.enums.State.*;
@@ -37,23 +40,26 @@ public class QueryHandler {
     private final SettingsInline settingsInline;
     private final ChatService chatService;
     private final PublishPaidInline publishPaidInline;
+    private final AdvInline advInline;
+    private final GarantInline garantInline;
+    private final LegitInline legitInline;
 
     @SneakyThrows
-    public void publishReceived(Long chadId, Integer messageId) {
+    public void publishReceived(Long chatId, Integer messageId) {
         File image = ResourceUtils.getFile("classpath:" + "static/images/publish.jpg");
         String answer = config.getPublishAnswer();
         SendPhoto photo = new SendPhoto();
-        photo.setChatId(chadId);
+        photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
         photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(answer);
         photo.setReplyMarkup(publishInline.getPublishInline());
 
         DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(chadId);
+        deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId);
 
-        chatService.updateState(chadId, NO_WAITING);
+        chatService.updateState(chatId, NO_WAITING);
 
         telegramBot.sendPhoto(photo, deleteMessage);
     }
@@ -194,6 +200,72 @@ public class QueryHandler {
         telegramBot.sendMessageAndWait(message, deleteMessage);
 
         //chatService.updateState(chatId, WAIT_PAID_PUBLISH);
+    }
+
+    @SneakyThrows
+    public void advertisingReceived(Long chatId, Integer messageId) {
+        File image = ResourceUtils.getFile("classpath:" + "static/images/advertising.jpg");
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\adv\\adv.txt");
+        String answer = Files.readString(path);
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(chatId);
+        photo.setPhoto(new InputFile(image));
+        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setCaption(answer);
+        photo.setReplyMarkup(advInline.getAdvInline());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+
+        chatService.updateState(chatId, NO_WAITING);
+
+        telegramBot.sendPhoto(photo, deleteMessage);
+
+    }
+
+    @SneakyThrows
+    public void garantReceived(Long chatId, Integer messageId) {
+        File image = ResourceUtils.getFile("classpath:" + "static/images/garant.jpg");
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\garant\\garant.txt");
+        String answer = Files.readString(path);
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(chatId);
+        photo.setPhoto(new InputFile(image));
+        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setCaption(answer);
+        photo.setReplyMarkup(garantInline.getGarantInline());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+
+        chatService.updateState(chatId, NO_WAITING);
+
+        telegramBot.sendPhoto(photo, deleteMessage);
+
+    }
+
+    @SneakyThrows
+    public void legitReceived(Long chatId, Integer messageId) {
+        File image = ResourceUtils.getFile("classpath:" + "static/images/legit.jpg");
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\legit\\legit.txt");
+        String answer = Files.readString(path);
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(chatId);
+        photo.setPhoto(new InputFile(image));
+//        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setCaption(answer);
+        photo.setReplyMarkup(legitInline.getLegitInline());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+
+        chatService.updateState(chatId, NO_WAITING);
+
+        telegramBot.sendPhoto(photo, deleteMessage);
+
     }
 
     @SneakyThrows
