@@ -21,10 +21,10 @@ public class MenuInline {
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
-//        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
-//        List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
-//        List<InlineKeyboardButton> rowInline5 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline5 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline6 = new ArrayList<>();
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
@@ -54,11 +54,17 @@ public class MenuInline {
         //inlineKeyboardButton1.setCallbackData(shopSplit[4]);
 
         rowInline1.add(inlineKeyboardButton1);
+        rowInline2.add(inlineKeyboardButton2);
         rowInline3.add(inlineKeyboardButton3);
+        rowInline4.add(inlineKeyboardButton4);
+        rowInline5.add(inlineKeyboardButton5);
 
 
         rowsInline.add(rowInline1);
-        //rowsInline.add(rowInline3);
+        rowsInline.add(rowInline2);
+//        rowsInline.add(rowInline3);
+        rowsInline.add(rowInline4);
+        rowsInline.add(rowInline5);
 
         if (chatId.equals(658756678L)  || chatId.equals(430899374L)) {
             rowInline6.add(inlineKeyboardButton6);
