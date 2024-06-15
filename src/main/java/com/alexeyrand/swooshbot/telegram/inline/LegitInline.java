@@ -20,7 +20,7 @@ public class LegitInline {
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
         inlineKeyboardButton1.setText("Заказать услугу");
         inlineKeyboardButton1.setCallbackData("leigt/order");
-        inlineKeyboardButton1.setUrl("https://t.me/skkwy");
+        inlineKeyboardButton1.setUrl("https://t.me/legit_swoosh");
 
         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
         inlineKeyboardButton2.setText("Назад");

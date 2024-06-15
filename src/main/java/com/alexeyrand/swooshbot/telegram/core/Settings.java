@@ -2,6 +2,7 @@ package com.alexeyrand.swooshbot.telegram.core;
 
 import com.alexeyrand.swooshbot.api.service.ChatService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
+import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.inline.SettingsInline;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -47,29 +48,65 @@ public class Settings {
     }
 
     @SneakyThrows
-    public void showTextMainMenu(Long chatId, Integer messageId, String data) {
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\menu\\menu.txt");
+    public void showTextMainMenu(Long chatId, Integer messageId, String data, String url) {
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\" + url + "\\" + url + ".txt");
         String content = Files.readString(path);
         telegramBot.deleteMessage(chatId, messageId);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText("Текст сейчас: \n\n" + content);
         sendMessage.setChatId(chatId);
-        sendMessage.setReplyMarkup(settingsInline.getEditMainMenuTextInline());
+        sendMessage.setReplyMarkup(settingsInline.getEditInline(url));
         telegramBot.justSendMessage(sendMessage);
     }
 
     @SneakyThrows
-    public void editMainMenu(Long chatId, Integer messageId, String text) {
+    public void showTextLegit(Long chatId, Integer messageId, String data) {
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\legit\\legit.txt");
+        String content = Files.readString(path);
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Текст сейчас: \n\n" + content);
+        sendMessage.setChatId(chatId);
+        sendMessage.setReplyMarkup(settingsInline.getEditInline("legit"));
+        telegramBot.justSendMessage(sendMessage);
+    }
+
+    @SneakyThrows
+    public void showTextAdv(Long chatId, Integer messageId, String data) {
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\adv\\adv.txt");
+        String content = Files.readString(path);
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Текст сейчас: \n\n" + content);
+        sendMessage.setChatId(chatId);
+        sendMessage.setReplyMarkup(settingsInline.getEditInline("adv"));
+        telegramBot.justSendMessage(sendMessage);
+    }
+
+    @SneakyThrows
+    public void showTextGarant(Long chatId, Integer messageId, String data) {
+        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\garant\\garant.txt");
+        String content = Files.readString(path);
+        telegramBot.deleteMessage(chatId, messageId);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Текст сейчас: \n\n" + content);
+        sendMessage.setChatId(chatId);
+        sendMessage.setReplyMarkup(settingsInline.getEditInline("garant"));
+        telegramBot.justSendMessage(sendMessage);
+    }
+
+    @SneakyThrows
+    public void editMainMenu(Long chatId, Integer messageId, String text, String url, State state) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
-            chatService.updateState(chatId, WAIT_EDIT_MAIN_MENU);
-            telegramBot.deleteMessage(chatId, messageId);
+            chatService.updateState(chatId, state);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
-                Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\menu\\menu.txt");
+                Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\" + url + "\\" + url + ".txt");
                 Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
                 Files.writeString(path, text, StandardOpenOption.CREATE);
                 chatService.updateState(chatId, NO_WAITING);
@@ -77,6 +114,7 @@ public class Settings {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
+                sendMessage.setReplyMarkup(settingsInline.getBackInline());
                 telegramBot.justSendMessage(sendMessage);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -89,10 +127,10 @@ public class Settings {
     public void edit1(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
             chatService.updateState(chatId, WAIT_EDIT_PUBLISH_1);
-            telegramBot.deleteMessage(chatId, messageId);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
@@ -104,6 +142,7 @@ public class Settings {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
+                sendMessage.setReplyMarkup(settingsInline.getBackInline());
                 telegramBot.justSendMessage(sendMessage);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -115,10 +154,10 @@ public class Settings {
     public void edit2(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
             chatService.updateState(chatId, WAIT_EDIT_PUBLISH_2);
-            telegramBot.deleteMessage(chatId, messageId);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
@@ -126,10 +165,10 @@ public class Settings {
                 Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
                 Files.writeString(path, text, StandardOpenOption.CREATE);
                 chatService.updateState(chatId, NO_WAITING);
-                telegramBot.deleteMessage(chatId, messageId);
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setText("Новый текст: \n\n" + text);
+                sendMessage.setText("Отправьте новый текст");
                 sendMessage.setChatId(chatId);
+                sendMessage.setReplyMarkup(settingsInline.getBackInline());
                 telegramBot.justSendMessage(sendMessage);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -141,10 +180,10 @@ public class Settings {
     public void edit3(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
             chatService.updateState(chatId, WAIT_EDIT_PUBLISH_3);
-            telegramBot.deleteMessage(chatId, messageId);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
@@ -156,6 +195,7 @@ public class Settings {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
+                sendMessage.setReplyMarkup(settingsInline.getBackInline());
                 telegramBot.justSendMessage(sendMessage);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -167,10 +207,10 @@ public class Settings {
     public void edit4(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
             chatService.updateState(chatId, WAIT_EDIT_PUBLISH_4);
-            telegramBot.deleteMessage(chatId, messageId);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
@@ -182,6 +222,7 @@ public class Settings {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
+                sendMessage.setReplyMarkup(settingsInline.getBackInline());
                 telegramBot.justSendMessage(sendMessage);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -192,6 +233,7 @@ public class Settings {
 
     @SneakyThrows
     public void showTextCdek(Long chatId, Integer messageId, String data) {
+        chatService.updateState(chatId, NO_WAITING);
         String num = String.valueOf(data.charAt(data.length() - 1));
         String suffix = getCdekPath(num);
 
@@ -209,10 +251,10 @@ public class Settings {
     public void cdekEdit1(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
             chatService.updateState(chatId, WAIT_EDIT_PUBLISH_4);
-            telegramBot.deleteMessage(chatId, messageId);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
@@ -235,14 +277,92 @@ public class Settings {
     public void cdekEdit2(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
             chatService.updateState(chatId, WAIT_EDIT_PUBLISH_4);
-            telegramBot.deleteMessage(chatId, messageId);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
                 Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\cdek\\cdekInfo.txt");
+                Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
+                Files.writeString(path, text, StandardOpenOption.CREATE);
+                chatService.updateState(chatId, NO_WAITING);
+                telegramBot.deleteMessage(chatId, messageId);
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setText("Новый текст: \n\n" + text);
+                sendMessage.setChatId(chatId);
+                telegramBot.justSendMessage(sendMessage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @SneakyThrows
+    public void legitEdit(Long chatId, Integer messageId, String text) {
+        if (chatService.getState(chatId).equals(NO_WAITING)) {
+            chatService.updateState(chatId, WAIT_EDIT_LEGIT);
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Отправьте новый текст");
+            sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
+            telegramBot.justSendMessage(sendMessage);
+        } else {
+            try {
+                Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\legit\\legit.txt");
+                Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
+                Files.writeString(path, text, StandardOpenOption.CREATE);
+                chatService.updateState(chatId, NO_WAITING);
+                telegramBot.deleteMessage(chatId, messageId);
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setText("Новый текст: \n\n" + text);
+                sendMessage.setChatId(chatId);
+                telegramBot.justSendMessage(sendMessage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @SneakyThrows
+    public void advEdit(Long chatId, Integer messageId, String text) {
+        if (chatService.getState(chatId).equals(NO_WAITING)) {
+            chatService.updateState(chatId, WAIT_EDIT_ADV);
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Отправьте новый текст");
+            sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
+            telegramBot.justSendMessage(sendMessage);
+        } else {
+            try {
+                Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\adv\\adv.txt");
+                Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
+                Files.writeString(path, text, StandardOpenOption.CREATE);
+                chatService.updateState(chatId, NO_WAITING);
+                telegramBot.deleteMessage(chatId, messageId);
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setText("Новый текст: \n\n" + text);
+                sendMessage.setChatId(chatId);
+                telegramBot.justSendMessage(sendMessage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @SneakyThrows
+    public void garantEdit(Long chatId, Integer messageId, String text) {
+        if (chatService.getState(chatId).equals(NO_WAITING)) {
+            chatService.updateState(chatId, WAIT_EDIT_GARANT);
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Отправьте новый текст");
+            sendMessage.setChatId(chatId);
+            sendMessage.setReplyMarkup(settingsInline.getBackInline());
+            telegramBot.justSendMessage(sendMessage);
+        } else {
+            try {
+                Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\garant\\garant.txt");
                 Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
                 Files.writeString(path, text, StandardOpenOption.CREATE);
                 chatService.updateState(chatId, NO_WAITING);

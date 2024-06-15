@@ -51,7 +51,9 @@ public class SettingsInline {
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
-
+        List<InlineKeyboardButton> rowInline5 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline6 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline7 = new ArrayList<>();
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
         inlineKeyboardButton1.setText("Текст в главном меню");
@@ -62,29 +64,47 @@ public class SettingsInline {
         inlineKeyboardButton2.setCallbackData("settings/text/publish");
 
         InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
-        inlineKeyboardButton3.setText("Сдек");
-        inlineKeyboardButton3.setCallbackData("settings/text/cdek");
+        inlineKeyboardButton3.setText("Легит Чек");
+        inlineKeyboardButton3.setCallbackData("settings/text/legit");
 
         InlineKeyboardButton inlineKeyboardButton4 = new InlineKeyboardButton();
-        inlineKeyboardButton4.setText("Назад");
-        inlineKeyboardButton4.setCallbackData("settings");
+        inlineKeyboardButton4.setText("Сдек");
+        inlineKeyboardButton4.setCallbackData("settings/text/cdek");
+
+        InlineKeyboardButton inlineKeyboardButton5 = new InlineKeyboardButton();
+        inlineKeyboardButton5.setText("Гарант");
+        inlineKeyboardButton5.setCallbackData("settings/text/garant");
+
+        InlineKeyboardButton inlineKeyboardButton6 = new InlineKeyboardButton();
+        inlineKeyboardButton6.setText("Реклама");
+        inlineKeyboardButton6.setCallbackData("settings/text/adv");
+
+        InlineKeyboardButton inlineKeyboardButton7 = new InlineKeyboardButton();
+        inlineKeyboardButton7.setText("Назад");
+        inlineKeyboardButton7.setCallbackData("settings");
 
         rowInline1.add(inlineKeyboardButton1);
         rowInline2.add(inlineKeyboardButton2);
         rowInline3.add(inlineKeyboardButton3);
         rowInline4.add(inlineKeyboardButton4);
+        rowInline5.add(inlineKeyboardButton5);
+        rowInline6.add(inlineKeyboardButton6);
+        rowInline7.add(inlineKeyboardButton7);
 
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
         rowsInline.add(rowInline3);
         rowsInline.add(rowInline4);
+        rowsInline.add(rowInline5);
+        rowsInline.add(rowInline6);
+        rowsInline.add(rowInline7);
 
         markupInline.setKeyboard(rowsInline);
 
         return markupInline;
     }
 
-    public InlineKeyboardMarkup getEditMainMenuTextInline() {
+    public InlineKeyboardMarkup getEditInline(String url) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
@@ -93,7 +113,7 @@ public class SettingsInline {
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
         inlineKeyboardButton1.setText("Задать новый текст");
-        inlineKeyboardButton1.setCallbackData("settings/text/menu/edit");
+        inlineKeyboardButton1.setCallbackData("settings/text/" + url + "/edit");
 
         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
         inlineKeyboardButton2.setText("Назад");
@@ -247,6 +267,26 @@ public class SettingsInline {
 
         return markupInline;
     }
+
+    public InlineKeyboardMarkup getBackInline() {
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+
+        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
+        inlineKeyboardButton1.setText("Назад");
+        inlineKeyboardButton1.setCallbackData("settings/text");
+
+        rowInline1.add(inlineKeyboardButton1);
+
+        rowsInline.add(rowInline1);
+
+        markupInline.setKeyboard(rowsInline);
+
+        return markupInline;
+    }
+
 
 
 
