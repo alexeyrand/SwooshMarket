@@ -175,8 +175,8 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
                 chatId.toString(),
                 config.getPaymentsToken(),
                 "RUB", List.of(new LabeledPrice("Цена", 150 * 100)));
-        invoiceLink.setNeedEmail(true);
-        invoiceLink.setNeedName(true);
+        invoiceLink.setNeedPhoneNumber(true);
+//        invoiceLink.setNeedName(true);
         invoiceLink.setPayload("publish");
         String response = telegramBot.buy(invoiceLink);
 

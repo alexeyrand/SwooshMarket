@@ -4,7 +4,7 @@
 bot:
   name: swoosh_bot
   token: 7080945542:AAHX8FoUj4dwkdRpUHntuvhJRI_sAWMWjpw
-  payments_token: 381764678:TEST:86831
+  payments_token: 390540012:LIVE:51785
 
 spring:
 
