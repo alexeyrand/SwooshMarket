@@ -47,14 +47,14 @@ public class QueryHandler {
     @SneakyThrows
     public void publishReceived(Long chadId, Integer messageId) {
         File image = new File("/root/SwooshBot/src/main/resources/static/images/publish.jpg");
-        String answer = config.getPublishAnswer();
+        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/menu.txt");
+        String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chadId);
         photo.setPhoto(new InputFile(image));
-        photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(answer);
         photo.setReplyMarkup(publishInline.getPublishInline());
-
+        photo.setParseMode(ParseMode.MARKDOWN);
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chadId);
         deleteMessage.setMessageId(messageId);
@@ -67,13 +67,13 @@ public class QueryHandler {
     @SneakyThrows
     public void publishFreeReceived(Long chatId, Integer messageId) {
 
-        String answer = config.getPublishFreeAnswer();
+        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/free.txt");
+        String answer = Files.readString(path);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
         message.setText(answer);
         message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
-
+        message.setParseMode(ParseMode.MARKDOWN);
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId);
@@ -83,14 +83,13 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishPaidReceived(Long chatId, Integer messageId) {
-        String answer = config.getPublishPaidAnswer();
-
+        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/paid.txt");
+        String answer = Files.readString(path);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
         message.setText(answer);
         message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
-
+        message.setParseMode(ParseMode.MARKDOWN);
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(-22);
@@ -103,12 +102,12 @@ public class QueryHandler {
 
     @SneakyThrows
     public void sdekReceived(Long chatId, Integer messageId) {
+Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         File image = new File("/root/SwooshBot/src/main/resources/static/images/sdek.jpg");
-        String answer = config.getSdekAnswer();
+        String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
-        photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(answer);
         photo.setReplyMarkup(sdekInline.getSdekInline());
 
@@ -126,11 +125,6 @@ public class QueryHandler {
 
         InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
         String answer = config.getSdekOrderAnswer();
-//        if (chatService.getSdekStatus(chatId)) {
-//            answer = answer + "\n\n*Статус оплаты*:\n✅ Оплачено, услуга доступна";
-//        } else {
-//            answer = answer + "\n\nСтатус оплаты:\n❌ Не оплачено";
-//        }
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setParseMode(ParseMode.MARKDOWN);
@@ -168,7 +162,8 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishCheckPaidReceived(Long chatId, Integer messageId) {
-        String answer = config.getPublishCheckPaidAnswer();
+        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/check.txt");
+        String answer = Files.readString(path);
         if (chatService.getPaidPublishStatus(chatId)) {
             answer = answer + "\n\n*Статус оплаты*:\nОплачено, услуга доступна ✅";
         } else {
@@ -253,7 +248,7 @@ public class QueryHandler {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
-//        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(answer);
         photo.setReplyMarkup(legitInline.getLegitInline());
 
@@ -280,6 +275,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void settings2(Long chatId, Integer messageId) {
+        chatService.updateState(chatId, NO_WAITING);
         telegramBot.deleteMessage(chatId, messageId);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);

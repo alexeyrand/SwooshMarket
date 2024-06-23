@@ -174,7 +174,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                 messageSender.sendMessage(chatId, "Такой команды нет.\nВызов меню: /start");
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else if (state.equals(WAIT_EDIT_MAIN_MENU)) {
-                setting.editMainMenu(chatId, messageId, message.getText());
+                setting.editMainMenu(chatId, messageId, message.getText(), "menu", state);
+            } else if (state.equals(WAIT_EDIT_LEGIT)) {
+                setting.editMainMenu(chatId, messageId, message.getText(), "legit", state);
+            } else if (state.equals(WAIT_EDIT_ADV)) {
+                setting.editMainMenu(chatId, messageId, message.getText(), "adv", state);
+            } else if (state.equals(WAIT_EDIT_GARANT)) {
+                setting.editMainMenu(chatId, messageId, message.getText(), "garant", state);
             } else if (state.equals(WAIT_EDIT_PUBLISH_1)) {
                 setting.edit1(chatId, messageId, message.getText());
             } else if (state.equals(WAIT_EDIT_PUBLISH_2)) {
@@ -232,8 +238,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "settings/text/publish" -> queryHandler.settings3(chatId, messageId);
                 case "settings/text/cdek" -> queryHandler.settings4(chatId, messageId);
 
-                case "settings/text/menu" -> setting.showTextMainMenu(chatId, messageId, data);
-                case "settings/text/menu/edit" -> setting.editMainMenu(chatId, messageId, data);
+                case "settings/text/menu" -> setting.showTextMainMenu(chatId, messageId, data, "menu");
+                case "settings/text/legit" -> setting.showTextMainMenu(chatId, messageId, data, "legit");
+                case "settings/text/adv" -> setting.showTextMainMenu(chatId, messageId, data, "adv");
+                case "settings/text/garant" -> setting.showTextMainMenu(chatId, messageId, data, "garant");
+
+                case "settings/text/menu/edit" ->
+                        setting.editMainMenu(chatId, messageId, data, "menu", WAIT_EDIT_MAIN_MENU);
+                case "settings/text/legit/edit" ->
+                        setting.editMainMenu(chatId, messageId, data, "legit", WAIT_EDIT_LEGIT);
+                case "settings/text/adv/edit" -> setting.editMainMenu(chatId, messageId, data, "adv", WAIT_EDIT_ADV);
+                case "settings/text/garant/edit" ->
+                        setting.editMainMenu(chatId, messageId, data, "garant", WAIT_EDIT_GARANT);
 
                 case "settings/text/publish/1",
                         "settings/text/publish/2",

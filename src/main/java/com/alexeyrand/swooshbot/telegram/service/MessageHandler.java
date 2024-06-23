@@ -16,6 +16,9 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static com.alexeyrand.swooshbot.telegram.enums.State.NO_WAITING;
 
@@ -32,17 +35,18 @@ public class MessageHandler {
 
     @SneakyThrows
     public void StartCommandReceived(Long chatId, Integer messageId) {
-        String answer = config.getHelpCommand();
+
+        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/menu/menu.txt");
+        String answer = Files.readString(path);
         InlineKeyboardMarkup inline = menuInline.getMenuInline(chatId);
 //        File image = ResourceUtils.getFile("classpath:" + "static/images/menu.jpg");
         File image = new File("/root/SwooshBot/src/main/resources/static/images/menu.jpg");
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
-        photo.setParseMode(ParseMode.MARKDOWN);
         photo.setCaption(answer);
         photo.setReplyMarkup(inline);
-
+        photo.setParseMode(ParseMode.MARKDOWN);
         chatService.updateState(chatId, NO_WAITING);
         telegramBot.justSendPhoto(photo);
     }

@@ -25,5 +25,9 @@ public enum State {
     WAIT_EDIT_PUBLISH_4,
 
     WAIT_EDIT_CDEK_1,
-    WAIT_EDIT_CDEK_2
+    WAIT_EDIT_CDEK_2,
+
+    WAIT_EDIT_LEGIT,
+    WAIT_EDIT_ADV,
+    WAIT_EDIT_GARANT
 }

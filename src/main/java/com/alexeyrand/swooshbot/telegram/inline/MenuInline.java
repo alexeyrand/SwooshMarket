@@ -63,7 +63,7 @@ public class MenuInline {
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
 //        rowsInline.add(rowInline3);
-        rowsInline.add(rowInline4);
+//        rowsInline.add(rowInline4);
         rowsInline.add(rowInline5);
 
         if (chatId.equals(658756678L)  || chatId.equals(430899374L)) {
