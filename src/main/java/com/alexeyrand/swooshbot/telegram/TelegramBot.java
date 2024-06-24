@@ -135,9 +135,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (update.getMessage().hasSuccessfulPayment()) {
                 Chat chat = chatService.findWaitByChatId(chatId).orElseThrow();
-                if (chat.getState().equals(WAIT_SDEK_PAYMENT)) {
+                if (state.equals(WAIT_SDEK_PAYMENT)) {
                     sdek.createOrder(chatId);
-                } else if (chat.getState().equals(WAIT_PAID_PUBLISH)) {
+                } else if (state.equals(WAIT_PAID_PUBLISH_PAYMENT)) {
                     queryHandler.publishPaidReceived(chatId, messageId);
                 }
 
@@ -275,11 +275,11 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             PreCheckoutQuery checkoutQuery = update.getPreCheckoutQuery();
             if (checkoutQuery.getInvoicePayload().equals("publish")) {
-                chatService.updateState(update.getPreCheckoutQuery().getFrom().getId(), WAIT_PAID_PUBLISH);
+                chatService.updateState(update.getPreCheckoutQuery().getFrom().getId(), WAIT_PAID_PUBLISH_PAYMENT);
             } else if (checkoutQuery.getInvoicePayload().equals("sdek")) {
                 chatService.updateState(update.getPreCheckoutQuery().getFrom().getId(), WAIT_SDEK_PAYMENT);
             }
-            execute(new AnswerPreCheckoutQuery(checkoutQuery.getId(), true, "error"));
+            execute(new AnswerPreCheckoutQuery(checkoutQuery.getId(), true, "error ошбика"));
 
         }
     }
@@ -371,9 +371,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         photoService.deleteAllByChatId(chatId);
         chatService.updateState(chatId, NO_WAITING);
+        Long userId = chatService.getIdByChatId(chatId);
         PublishOrderInfo publishOrderInfo = PublishOrderInfo
                 .builder()
                 .chatId(chatId)
+                .userId(userId)
                 .username(message.getChat().getUserName())
                 .orderType(paid ? "PAID" : "FREE")
                 .date(new Date())

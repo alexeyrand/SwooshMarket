@@ -28,6 +28,11 @@ public class ChatService {
         return chat.getState();
     }
 
+    public Long getIdByChatId(Long chatId) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        return chat.getId();
+    }
+
     public Boolean getPaidPublishStatus(Long chatId) {
         Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
         return chat.getPaidPublishStatus();
