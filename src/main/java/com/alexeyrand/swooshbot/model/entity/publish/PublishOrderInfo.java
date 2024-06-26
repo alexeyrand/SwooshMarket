@@ -28,4 +28,7 @@ public class PublishOrderInfo {
 
     @Column(name = "order_type")
     private String orderType;    // тип заказа: paid - платная публикация, free - бесплатная публикация
+
+    @Column(name = "user_id")
+    private Long userId; // id пользователя из таблицы CHAT
 }

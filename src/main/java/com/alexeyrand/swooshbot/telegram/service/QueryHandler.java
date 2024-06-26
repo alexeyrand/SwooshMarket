@@ -2,8 +2,13 @@ package com.alexeyrand.swooshbot.telegram.service;
 
 import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.api.service.ChatService;
+import com.alexeyrand.swooshbot.model.publish.Amount;
+import com.alexeyrand.swooshbot.model.publish.Item;
+import com.alexeyrand.swooshbot.model.publish.ProviderData;
+import com.alexeyrand.swooshbot.model.publish.Receipt;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.inline.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +28,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Provider;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.alexeyrand.swooshbot.telegram.enums.State.*;
@@ -85,6 +92,8 @@ public class QueryHandler {
     public void publishPaidReceived(Long chatId, Integer messageId) {
         Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/paid.txt");
         String answer = Files.readString(path);
+
+        chatService.updateState(chatId, WAIT_PAID_PUBLISH);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(answer);
@@ -175,8 +184,28 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
                 chatId.toString(),
                 config.getPaymentsToken(),
                 "RUB", List.of(new LabeledPrice("Цена", 150 * 100)));
+        invoiceLink.setNeedEmail(true);
+        invoiceLink.setSendEmailToProvider(true);
         invoiceLink.setNeedPhoneNumber(true);
-//        invoiceLink.setNeedName(true);
+        invoiceLink.setSendPhoneNumberToProvider(true);
+        Receipt receipt = new Receipt();
+        List<Item> items = new ArrayList<>();
+        Item item = new Item();
+        item.setDescription("Publication out of sequence");
+        item.setQuantity("1");
+        Amount amount = new Amount();
+        amount.setValue("150.00");
+        amount.setCurrency("RUB");
+        item.setVat_code(1);
+        item.setAmount(amount);
+        items.add(item);
+        receipt.setItems(items);
+        ProviderData providerData = new ProviderData();
+        providerData.setReceipt(receipt);
+        final ObjectMapper mapper = new ObjectMapper();
+        String jsonDataRequest = mapper.writeValueAsString(providerData);
+        invoiceLink.setProviderData(jsonDataRequest);
+
         invoiceLink.setPayload("publish");
         String response = telegramBot.buy(invoiceLink);
 
@@ -192,8 +221,6 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         deleteMessage.setMessageId(messageId);
         chatService.updateBlock(chatId, true);
         telegramBot.sendMessageAndWait(message, deleteMessage);
-
-        //chatService.updateState(chatId, WAIT_PAID_PUBLISH);
     }
 
     @SneakyThrows
