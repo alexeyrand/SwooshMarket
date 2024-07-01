@@ -150,8 +150,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 publish.PublishFree(message, chatId);
             } else if (state.equals(WAIT_PAID_PUBLISH)) {
                 publish.PublishPaid(message, chatId);
-            } else if (state.equals(WAIT_SDEK_TARIFF)) {
-                sdek.setTariff(message, chatId, message.getText());
+//            } else if (state.equals(WAIT_SDEK_TARIFF)) {
+//                sdek.setTariff(message, chatId, message.getText());
             } else if (state.equals(WAIT_SDEK_WEIGHT)) {
                 sdek.setWeight(message, chatId, message.getText());
             } else if (state.equals(WAIT_SDEK_DIMENSIONS)) {
@@ -203,6 +203,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             Long chatId = message.getChatId();
             Integer messageId = message.getMessageId();
             String data = query.getData();
+//            String text = query.ge
 
             if (chatService.findWaitByChatId(chatId).isEmpty()) {
                 chatService.save(
@@ -232,6 +233,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 case "sdek/order" -> queryHandler.sdekOrderReceived(chatId, messageId);
                 case "sdek/order/1" -> queryHandler.sdekOrder1Received(chatId, messageId);
+                case "cdek/tariff/136", "cdek/tariff/482" -> sdek.setTariff(chatId, messageId, data);
 
                 case "settings" -> queryHandler.settings1(chatId, messageId);
                 case "settings/text" -> queryHandler.settings2(chatId, messageId);
@@ -354,7 +356,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 inputPhoto.setMedia(url);
                 if (photos.get(0).getPhoto().equals(url)) {
                     inputPhoto.setCaption(text + "\n\nПродавец: @" + username + paidAnswer);
-                    inputPhoto.setParseMode(ParseMode.MARKDOWN);
                 }
                 inputsMedia.add(inputPhoto);
             }
@@ -366,7 +367,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             sendPhoto.setPhoto(new InputFile(photos.get(0).getPhoto()));
             sendPhoto.setChatId(channelId);
             sendPhoto.setCaption(text + "\n\nПродавец: @" + username + paidAnswer);
-            sendPhoto.setParseMode(ParseMode.MARKDOWN);
             execute(sendPhoto);
         }
         photoService.deleteAllByChatId(chatId);

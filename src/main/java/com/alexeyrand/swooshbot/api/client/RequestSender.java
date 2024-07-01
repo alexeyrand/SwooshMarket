@@ -42,7 +42,7 @@ public class RequestSender {
 
     @SneakyThrows
     public String getPVZ(String PVZCode) throws JsonProcessingException {
-        String URL = "https://api.edu.cdek.ru/v2/deliverypoints";
+        String URL = "https://api.cdek.ru/v2/deliverypoints";
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.of(15, SECONDS))
                 .build();
@@ -51,7 +51,7 @@ public class RequestSender {
                 .uri(URI.create(URL + "?code=" + PVZCode.toUpperCase()))
                 .timeout(Duration.of(5, SECONDS))
                 .GET()
-                .header("Authorization", getToken())
+                .header("Authorization", getMainToken())
                 .build();
         String response = "";
         try {
@@ -100,7 +100,7 @@ public class RequestSender {
     public String createOrder(Long chatId) throws JsonProcessingException {
 
         final ObjectMapper mapper = new ObjectMapper();
-        URI url = URI.create("https://api.edu.cdek.ru/v2/orders");
+        URI url = URI.create("https://api.cdek.ru/v2/orders");
 
         SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
         Phone phone = new Phone(sdekOrderInfo.getRecipientNumber());
@@ -133,7 +133,7 @@ public class RequestSender {
                 .uri(url)
                 .timeout(Duration.of(5, SECONDS))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonOrderRequest))
-                .header("Authorization", getToken())
+                .header("Authorization", getMainToken())
                 .header("Content-Type", "application/json")
                 .build();
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
@@ -156,7 +156,7 @@ public class RequestSender {
     public CalculateCostResponse calculateTheCostOrder(Long chatId, Integer shipmentCode, Integer deliveryCode) {
         final ObjectMapper mapper = new ObjectMapper();
         SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
-        String url = "https://api.edu.cdek.ru/v2/calculator/tarifflist";
+        String url = "https://api.cdek.ru/v2/calculator/tarifflist";
 
         CalculateCostRequest calculateCostRequest = CalculateCostRequest
                 .builder()
@@ -183,7 +183,7 @@ public class RequestSender {
                 .uri(URI.create(url))
                 .timeout(Duration.of(5, SECONDS))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonCalculateCoastRequest))
-                .header("Authorization", getToken())
+                .header("Authorization", getMainToken())
                 .header("Content-Type", "application/json")
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -196,7 +196,7 @@ public class RequestSender {
     @SneakyThrows
     public SdekOrderInfoResponse getOrderInfo(String uuid) {
         final ObjectMapper mapper = new ObjectMapper();
-        URI url = URI.create("https://api.edu.cdek.ru/v2/orders/" + uuid);
+        URI url = URI.create("https://api.cdek.ru/v2/orders/" + uuid);
 
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.of(5, SECONDS))
@@ -206,7 +206,7 @@ public class RequestSender {
                 .uri(url)
                 .timeout(Duration.of(5, SECONDS))
                 .GET()
-                .header("Authorization", getToken())
+                .header("Authorization", getMainToken())
                 .header("Content-Type", "application/json")
                 .build();
         HttpResponse<String> responseFuture = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -270,6 +270,34 @@ public class RequestSender {
                 .uri(URI.create("https://api.edu.cdek.ru/v2/oauth/token?parameters"))
                 .timeout(Duration.of(5, SECONDS))
                 .POST(HttpRequest.BodyPublishers.ofString("{grant_type: \"client_credentials\", client_id: \"EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI\", client_secret: \"PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3kG\"}"))
+                .POST(HttpRequest.BodyPublishers.ofString(params))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .build();
+        HttpResponse<String> responseFuture = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return "Bearer " + responseFuture.body().split("\"")[3];
+    }
+
+    private static String getMainToken() throws IOException, InterruptedException {
+        String params = Map.of(
+                        "grant_type", "client_credentials",
+                        "client_id", "1Pj8yymrXxdXrar2N8YcrDgSG68OKQmP",
+                        "client_secret", "IYDSLT3DstxMl37EJYF5pHgQDP3Oez2r")
+                .entrySet()
+                .stream()
+                .map(entry -> Stream.of(
+                                URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8),
+                                URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                        .collect(Collectors.joining("="))
+                ).collect(Collectors.joining("&"));
+
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.of(5, SECONDS))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.cdek.ru/v2/oauth/token?parameters"))
+                .timeout(Duration.of(5, SECONDS))
+                .POST(HttpRequest.BodyPublishers.ofString("{grant_type: \"client_credentials\", client_id: \"1Pj8yymrXxdXrar2N8YcrDgSG68OKQmP\", client_secret: \"IYDSLT3DstxMl37EJYF5pHgQDP3Oez2r\"}"))
                 .POST(HttpRequest.BodyPublishers.ofString(params))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .build();

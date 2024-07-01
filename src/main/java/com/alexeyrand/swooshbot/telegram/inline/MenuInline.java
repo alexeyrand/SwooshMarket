@@ -12,9 +12,6 @@ import java.util.List;
 @Component
 public class MenuInline {
 
-    @Autowired
-    private BotConfig config;
-
     public InlineKeyboardMarkup getMenuInline(Long chatId) {
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();

@@ -5,16 +5,17 @@ import com.alexeyrand.swooshbot.config.BotConfig;
 import com.alexeyrand.swooshbot.model.dto.calculator.CalculateCostResponse;
 import com.alexeyrand.swooshbot.model.dto.calculator.CostInfo;
 import com.alexeyrand.swooshbot.model.dto.sdek.SdekOrderInfoResponse;
-import com.alexeyrand.swooshbot.model.entity.sdek.Order;
+import com.alexeyrand.swooshbot.model.entity.sdek.CdekOrderInfo;
 import com.alexeyrand.swooshbot.model.entity.sdek.SdekOrderInfo;
 import com.alexeyrand.swooshbot.api.service.ChatService;
-import com.alexeyrand.swooshbot.api.service.OrderService;
+import com.alexeyrand.swooshbot.api.service.CdekOrderInfoService;
 import com.alexeyrand.swooshbot.api.service.SdekOrderInfoService;
 import com.alexeyrand.swooshbot.telegram.TelegramBot;
 import com.alexeyrand.swooshbot.telegram.enums.State;
 import com.alexeyrand.swooshbot.telegram.enums.TariffCode;
 import com.alexeyrand.swooshbot.telegram.inline.*;
 import com.alexeyrand.swooshbot.telegram.service.QueryHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,20 +49,21 @@ public class Sdek {
     private final MainMenuInline mainMenuInline;
     private final SdekOrderInfoService sdekOrderInfoService;
     private final ChatService chatService;
-    private final OrderService orderService;
+    private final CdekOrderInfoService cdekOrderInfoService;
     private final RequestSender requestSender;
 
-    public void setTariff(Message message, Long chatId, String tariff) throws TelegramApiException {
+    public void setTariff(Long chatId, Integer messageId, String tariff) throws TelegramApiException {
         createSdekOrderRequestIfNotExist(chatId);
         try {
+            tariff = tariff.split("/")[2];
             TariffCode.valueOf("TARIFF_" + tariff);
             SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
             sdekOrderInfo.setTariffCode(Integer.parseInt(tariff));
             sdekOrderInfo.setInfo("Информация о заказе:\n✅ Тариф: " + tariff);
             sdekOrderInfoService.save(sdekOrderInfo);
 
-            telegramBot.deleteMessage(chatId, message.getMessageId());
-            telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
+            telegramBot.deleteMessage(chatId, messageId);
+//            telegramBot.deleteMessage(chatId, messageId - 1);
 
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -397,6 +399,7 @@ public class Sdek {
         String uuid = requestSender.createOrder(chatId);
         Thread.sleep(3000);
         SdekOrderInfoResponse sdekOrderInfoResponse = requestSender.getOrderInfo(uuid);
+        sdekOrderInfoResponse.setUuid(uuid);
         handlerSdekOrderInfoResponse(chatId, sdekOrderInfoResponse);
 
         String answer;
@@ -419,18 +422,19 @@ public class Sdek {
         sendMessage.setChatId(chatId);
         sendMessage.setText(answer);
         sendMessage.setParseMode(ParseMode.MARKDOWN);
+        sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
         telegramBot.justSendMessage(sendMessage);
         chatService.updateState(chatId, NO_WAITING);
 
         if (Objects.equals(sdekOrderInfoResponse.getStatus(), "Заказ успешно создан")) {
-            Order order = Order.builder()
+            CdekOrderInfo cdekOrderInfo = CdekOrderInfo.builder()
                     .chatId(chatId)
                     .username(chatService.findWaitByChatId(chatId).orElseThrow().getUsername())
                     .state(sdekOrderInfoResponse.getStatus())
-                    .dateTime(sdekOrderInfoResponse.getDate())
+                    .date(sdekOrderInfoResponse.getDate())
                     .uuid(sdekOrderInfoResponse.getUuid())
                     .build();
-            orderService.save(order);
+            cdekOrderInfoService.save(cdekOrderInfo);
         }
     }
 
@@ -469,7 +473,7 @@ public class Sdek {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText(sdekOrderInfo.getInfo() + "\n\nЦена доставки: " + cost + "руб.");
-            sendMessage.setReplyMarkup(sdekInline.getSdekPayInline(response, chatId));
+            sendMessage.setReplyMarkup(sdekInline.getCdekPayInline(response, chatId));
             telegramBot.justSendMessage(sendMessage);
         } else {
             SendMessage sendMessage = new SendMessage();
@@ -487,7 +491,7 @@ public class Sdek {
         }
     }
 
-    private void handlerSdekOrderInfoResponse(Long chatId, SdekOrderInfoResponse sdekOrderInfoResponse) {
+    private void handlerSdekOrderInfoResponse(Long chatId, SdekOrderInfoResponse sdekOrderInfoResponse) throws JsonProcessingException {
         if (sdekOrderInfoResponse.getStatus().equals("SUCCESSFUL")) {
             sdekOrderInfoResponse.setStatus("Заказ успешно создан");
         } else if (sdekOrderInfoResponse.getStatus().equals("INVALID")) {
@@ -495,16 +499,31 @@ public class Sdek {
         }
         List<String> ws = sdekOrderInfoResponse.getWarnings();
         if (!ws.isEmpty() && ws.get(0).contains("Delivery point has been changed to")) {
-            sdekOrderInfoResponse.setWarn("Адрес ПВЗ доставки был изменен!\nВыбранный ПВЗ " + sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow().getDeliveryPoint()
-                    + " недоступен. Произошла переадресация на ближайший ПВЗ " + sdekOrderInfoResponse.getWarnings().get(0).split("to ")[1] + ".");
+            String result1 = requestSender.getPVZ(sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow().getDeliveryPoint());
+            String oldAddressPVZ = result1.split("\"address_full\"")[1].split("\"")[1];
+            String codePVZ = ws.get(0).split("changed to ")[1].replace("\"", "");
+            String result2 = requestSender.getPVZ(codePVZ);
+            String newAddressPVZ = result2.split("\"address_full\"")[1].split("\"")[1];
+            sdekOrderInfoResponse.setWarn("Адрес ПВЗ доставки был изменен!\nВыбранный ПВЗ: \n\"" + oldAddressPVZ
+                    + "\"\nнедоступен. Произошла переадресация на ближайший ПВЗ по адресу:\n\"" + newAddressPVZ + ".\"");
         }
         List<String> ers = sdekOrderInfoResponse.getErrors();
         if (!ers.isEmpty() && ers.get(0).contains("The pick-up point")) {
-            sdekOrderInfoResponse.setErr("Некорректный заказ!\nВыбранный ПВЗ " + sdekOrderInfoResponse.getErrors().get(0).split("\"")[1]
-                    + " недоступен или не существует. Уточните информацию на сайте и укажите корректный код ПВЗ.");
+            sdekOrderInfoResponse.setErr("Некорректный заказ!\nВыбранный ПВЗ:\n \"" + sdekOrderInfoResponse.getErrors().get(0).split("\"")[1]
+                    + "\"\nнедоступен или не существует. Уточните информацию на сайте и укажите корректный код ПВЗ.");
         }
         sdekOrderInfoService.deleteByChatId(chatId);
     }
+
+//    public void handleTariff(Long chatId, Integer messageId, String tariff) throws TelegramApiException {
+//        createSdekOrderRequestIfNotExist(chatId);
+//        tariff = tariff.split("/")[2];
+//        SdekOrderInfo sdekOrderInfo = sdekOrderInfoService.findSdekOrderInfoByChatId(chatId).orElseThrow();
+//        sdekOrderInfo.setTariffCode(Integer.parseInt(tariff));
+////        sdekOrderInfoService.save(sdekOrderInfo);
+//        setTariff(messageId, chatId, tariff);
+//        sdekOrderInfoService.deleteByChatId(chatId);
+//    }
 
 
 }

@@ -61,6 +61,7 @@ public class QueryHandler {
         photo.setPhoto(new InputFile(image));
         photo.setCaption(answer);
         photo.setReplyMarkup(publishInline.getPublishInline());
+        photo.setParseMode(ParseMode.MARKDOWN);
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
@@ -80,6 +81,7 @@ public class QueryHandler {
         message.setChatId(chatId);
         message.setText(answer);
         message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
+        message.setParseMode(ParseMode.MARKDOWN);
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
@@ -98,6 +100,7 @@ public class QueryHandler {
         message.setChatId(chatId);
         message.setText(answer);
         message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
+        message.setParseMode(ParseMode.MARKDOWN);
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
@@ -119,7 +122,7 @@ public class QueryHandler {
         photo.setPhoto(new InputFile(image));
         photo.setCaption(answer);
         photo.setReplyMarkup(sdekInline.getSdekInline());
-
+        photo.setParseMode(ParseMode.MARKDOWN);
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId);
@@ -151,6 +154,25 @@ public class QueryHandler {
 
     @SneakyThrows
     public void sdekOrder1Received(Long chatId, Integer messageId) {
+
+        String answer = config.getSdekOrder1Answer();
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setParseMode(ParseMode.MARKDOWN);
+        message.setText(answer);
+        message.setReplyMarkup(sdekInline.getCdekTariffInline());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(messageId);
+
+//        chatService.updateState(chatId, WAIT_SDEK_TARIFF);
+
+        telegramBot.sendMessageWithDelete(message, deleteMessage);
+    }
+
+    @SneakyThrows
+    public void cdekTariffReceived(Long chatId, Integer messageId) {
 
         String answer = config.getSdekOrder1Answer();
         SendMessage message = new SendMessage();

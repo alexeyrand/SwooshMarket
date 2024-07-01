@@ -86,7 +86,7 @@ private final ChatService chatService;
         return markupInline;
     }
 
-    public InlineKeyboardMarkup getSdekPayInline(String response, Long  chatId) {
+    public InlineKeyboardMarkup getCdekPayInline(String response, Long  chatId) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
@@ -121,4 +121,42 @@ private final ChatService chatService;
 
         return markupInline;
     }
+
+
+
+    public InlineKeyboardMarkup getCdekTariffInline() {
+
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
+
+        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
+        InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
+        InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
+
+
+        inlineKeyboardButton1.setText("Тариф 136");
+        inlineKeyboardButton1.setCallbackData("cdek/tariff/136");
+        inlineKeyboardButton2.setText("Тариф 482");
+        inlineKeyboardButton2.setCallbackData("cdek/tariff/482");
+
+        inlineKeyboardButton3.setText("Назад");
+        inlineKeyboardButton3.setCallbackData("sdek/order");
+
+        rowInline1.add(inlineKeyboardButton1);
+        rowInline2.add(inlineKeyboardButton2);
+        rowInline3.add(inlineKeyboardButton3);
+
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+        rowsInline.add(rowInline3);
+
+
+        markupInline.setKeyboard(rowsInline);
+
+        return markupInline;
+    }
+
 }
