@@ -167,12 +167,13 @@ public class Settings {
             telegramBot.justSendMessage(sendMessage);
         } else {
             try {
-                Path path = Paths.get("/root/SwooshBot/src/main/resources/publish/free.txt");
+                Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/free.txt");
                 Files.writeString(path, "", StandardOpenOption.DELETE_ON_CLOSE);
                 Files.writeString(path, text, StandardOpenOption.CREATE);
                 chatService.updateState(chatId, NO_WAITING);
+                telegramBot.deleteMessage(chatId, messageId);
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setText("Отправьте новый текст");
+                sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
                 sendMessage.setReplyMarkup(settingsInline.getBackInline());
                 sendMessage.setParseMode(ParseMode.MARKDOWN);

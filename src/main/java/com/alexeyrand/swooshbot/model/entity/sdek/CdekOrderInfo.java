@@ -9,10 +9,10 @@ import lombok.*;
 @Builder
 @ToString
 @Entity
-@Table(name = "sdek_order")
+@Table(name = "cdek_order_info")
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Order {
+public class CdekOrderInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -21,8 +21,8 @@ public class Order {
     private Long chatId;
     @Column(name = "username")
     private String username;
-    @Column(name = "date_time")
-    private String dateTime;
+    @Column(name = "date")
+    private String date;
     @Column(name = "status")
     private String state;
     @Column(name = "uuid")
