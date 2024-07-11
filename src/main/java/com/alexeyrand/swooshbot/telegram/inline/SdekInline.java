@@ -137,9 +137,9 @@ private final ChatService chatService;
         InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
 
 
-        inlineKeyboardButton1.setText("Тариф 136");
+        inlineKeyboardButton1.setText("склад-склад");
         inlineKeyboardButton1.setCallbackData("cdek/tariff/136");
-        inlineKeyboardButton2.setText("Тариф 482");
+        inlineKeyboardButton2.setText("склад-склад экспресс");
         inlineKeyboardButton2.setCallbackData("cdek/tariff/482");
 
         inlineKeyboardButton3.setText("Назад");

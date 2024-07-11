@@ -12,6 +12,7 @@ public class City {
     private String city_uuid;
     private String city;
     private String fias_guid;
+    private String fias_region_guid;
     private String kladr_code;
     private String country_code;
     private String country;
