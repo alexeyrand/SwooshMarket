@@ -68,7 +68,7 @@ public class RequestSender {
     @SneakyThrows
     public Integer getCityCode(Long chatId, String city) throws JsonProcessingException {
         final ObjectMapper mapper = new ObjectMapper();
-        String URL = "https://api.edu.cdek.ru/v2/location/cities?size=1&page=0";
+        String URL = "https://api.cdek.ru/v2/location/cities?size=1&page=0";
 
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.of(5, SECONDS))
@@ -78,7 +78,7 @@ public class RequestSender {
                 .uri(URI.create(URL + "&city=" + city))
                 .timeout(Duration.of(5, SECONDS))
                 .GET()
-                .header("Authorization", getToken())
+                .header("Authorization", getMainToken())
                 .build();
 
         Integer response = null;
