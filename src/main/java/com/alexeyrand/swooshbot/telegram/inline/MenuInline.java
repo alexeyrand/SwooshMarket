@@ -33,7 +33,7 @@ public class MenuInline {
         inlineKeyboardButton2.setCallbackData("legit");
 
         InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
-        inlineKeyboardButton3.setText("Сдек");
+        inlineKeyboardButton3.setText("СДЭК 50%");
         inlineKeyboardButton3.setCallbackData("sdek");
 
         InlineKeyboardButton inlineKeyboardButton4 = new InlineKeyboardButton();

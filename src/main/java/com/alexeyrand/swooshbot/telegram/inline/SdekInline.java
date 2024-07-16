@@ -51,7 +51,7 @@ private final ChatService chatService;
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
-        inlineKeyboardButton1.setText("Указать информацию о заказе");
+        inlineKeyboardButton1.setText("Перейти к созданию");
         inlineKeyboardButton1.setCallbackData("sdek/order/1");
 
         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
@@ -101,7 +101,7 @@ private final ChatService chatService;
 
         if (chatService.getSdekStatus(chatId)) {
             inlineKeyboardButton1 = new InlineKeyboardButton();
-            inlineKeyboardButton1.setText("Оформить заказ");
+            inlineKeyboardButton1.setText("Создать накладную");
             inlineKeyboardButton1.setCallbackData("sdek/order/create");
         } else {
             inlineKeyboardButton1 = new InlineKeyboardButton();

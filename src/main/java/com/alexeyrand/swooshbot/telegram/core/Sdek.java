@@ -415,7 +415,7 @@ public class Sdek {
             answer = "Информаци о заказе:\n" +
                     "Статус: " + sdekOrderInfoResponse.getStatus() +
                     "\nДата создания: " + sdekOrderInfoResponse.getDate() +
-                    "\nНомер для отслеживания: " + sdekOrderInfoResponse.getOrderNumber();
+                    "\n✅Трек-номер для отслеживания: " + sdekOrderInfoResponse.getOrderNumber();
         } else {
             answer = "Во время создания заказа произошла ошибка. Обратитесь к администратору.";
         }
@@ -425,7 +425,7 @@ public class Sdek {
         if (sdekOrderInfoResponse.getErr() != null) {
             answer = answer + "\n\nОшибки: \n" + sdekOrderInfoResponse.getErr();
         }
-        answer = answer + "\n\n\nuuid: " + uuid;
+        answer = answer + "\n\nuuid: " + uuid;
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(answer);
@@ -468,8 +468,8 @@ public class Sdek {
             //telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
 
             CreateInvoiceLink invoiceLink = new CreateInvoiceLink(
-                    "Офомрление накладной",
-                    "После оплаты вам направлен трек номер",
+                    "Оплата накладной СДЭК",
+                    "После оплаты вы получите трек-номер для отправки и отслеживания посылки",
                     chatId.toString(),
                     config.getPaymentsToken(),
                     "RUB", List.of(new LabeledPrice("Цена", Math.round(cost) * 100)));
