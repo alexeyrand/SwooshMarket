@@ -59,7 +59,7 @@ public class MenuInline {
 
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
-//        rowsInline.add(rowInline3);
+        rowsInline.add(rowInline3);
 //        rowsInline.add(rowInline4);
         rowsInline.add(rowInline5);
 
