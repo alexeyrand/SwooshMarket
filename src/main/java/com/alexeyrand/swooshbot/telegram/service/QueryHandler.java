@@ -61,7 +61,8 @@ public class QueryHandler {
         photo.setPhoto(new InputFile(image));
         photo.setCaption(answer);
         photo.setReplyMarkup(publishInline.getPublishInline());
-        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setParseMode(ParseMode.MARKDOWNV2);
+
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chadId);
         deleteMessage.setMessageId(messageId);
@@ -81,7 +82,7 @@ public class QueryHandler {
         message.setText(answer);
         message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
         message.disableWebPagePreview();
-        message.setParseMode(ParseMode.MARKDOWN);
+        message.setParseMode(ParseMode.MARKDOWNV2);
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
@@ -100,8 +101,8 @@ public class QueryHandler {
         message.setChatId(chatId);
         message.setText(answer);
         message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
-        message.setParseMode(ParseMode.MARKDOWN);
         message.disableWebPagePreview();
+        message.setParseMode(ParseMode.MARKDOWNV2);
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
@@ -123,7 +124,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         photo.setPhoto(new InputFile(image));
         photo.setCaption(answer);
         photo.setReplyMarkup(sdekInline.getSdekInline());
-        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setParseMode(ParseMode.MARKDOWNV2);
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(messageId);
@@ -135,12 +136,12 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
     @SneakyThrows
     public void sdekOrderReceived(Long chatId, Integer messageId) {
-
+        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdekInfo.txt");
+        String answer = Files.readString(path);
         InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
-        String answer = config.getSdekOrderAnswer();
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+        message.setParseMode(ParseMode.MARKDOWNV2);
         message.setText(answer);
         message.setReplyMarkup(inline);
 
@@ -159,7 +160,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         String answer = config.getSdekOrder1Answer();
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+        message.setParseMode(ParseMode.MARKDOWNV2);
         message.setText(answer);
         message.setReplyMarkup(sdekInline.getCdekTariffInline());
 
@@ -178,7 +179,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         String answer = config.getSdekOrder1Answer();
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+        message.setParseMode(ParseMode.MARKDOWNV2);
         message.setText(answer);
         message.setReplyMarkup(sdekInline.getSdekBackInline());
 
@@ -235,7 +236,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+        message.setParseMode(ParseMode.MARKDOWNV2);
         message.setText(answer);
         message.setReplyMarkup(publishPaidInline.getPublishPaidInline(response, chatId));
 
@@ -254,7 +255,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
-        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setParseMode(ParseMode.MARKDOWNV2);
         photo.setCaption(answer);
         photo.setReplyMarkup(advInline.getAdvInline());
 
@@ -276,7 +277,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
-        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setParseMode(ParseMode.MARKDOWNV2);
         photo.setCaption(answer);
         photo.setReplyMarkup(garantInline.getGarantInline());
 
@@ -298,7 +299,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
-        photo.setParseMode(ParseMode.MARKDOWN);
+        photo.setParseMode(ParseMode.MARKDOWNV2);
         photo.setCaption(answer);
         photo.setReplyMarkup(legitInline.getLegitInline());
 
@@ -317,7 +318,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         telegramBot.deleteMessage(chatId, messageId);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+//        message.setParseMode(ParseMode.MARKDOWNV2);
         message.setText("Тут будет текст с пояснениями где что настраивать");
         message.setReplyMarkup(settingsInline.getSettingsInline());
         telegramBot.justSendMessage(message);
@@ -329,7 +330,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         telegramBot.deleteMessage(chatId, messageId);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+//        message.setParseMode(ParseMode.MARKDOWNV2);
         message.setText(
                 "1) Редактировать текст в главным меню\n" +
                 "2) Редактировать текст в разделе \"Публикация постов\"\n" +
@@ -343,7 +344,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         telegramBot.deleteMessage(chatId, messageId);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+//        message.setParseMode(ParseMode.MARKDOWN);
         message.setText("Ниже перечислены все сообщения бота из раздела ПУБЛИКАЦИИ содержащие текст который можно редактировать");
         message.setReplyMarkup(settingsInline.getSettingsTextPublishInline());
         telegramBot.justSendMessage(message);
@@ -354,7 +355,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
         telegramBot.deleteMessage(chatId, messageId);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setParseMode(ParseMode.MARKDOWN);
+//        message.setParseMode(ParseMode.MARKDOWN);
         message.setText("Ниже перечислены все сообщения бота из раздела СДЕК содержащие текст который можно редактировать");
         message.setReplyMarkup(settingsInline.getSettingsTextCdekInline());
         telegramBot.justSendMessage(message);

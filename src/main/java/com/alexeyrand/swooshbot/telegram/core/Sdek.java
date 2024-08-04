@@ -421,7 +421,7 @@ public class Sdek {
             answer = "Информаци о заказе:\n" +
                     "Статус: " + sdekOrderInfoResponse.getStatus() +
                     "\nДата создания: " + sdekOrderInfoResponse.getDate() +
-                    "\nНомер для отслеживания: " + sdekOrderInfoResponse.getOrderNumber();
+                    "\n✅Трек-номер для отслеживания: " + sdekOrderInfoResponse.getOrderNumber();
         } else {
             answer = "Во время создания заказа произошла ошибка. Обратитесь к администратору.";
         }
@@ -431,7 +431,7 @@ public class Sdek {
         if (sdekOrderInfoResponse.getErr() != null) {
             answer = answer + "\n\nОшибки: \n" + sdekOrderInfoResponse.getErr();
         }
-        answer = answer + "\n\n\nuuid: " + uuid;
+        answer = answer + "\n\nuuid: " + uuid;
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(answer);

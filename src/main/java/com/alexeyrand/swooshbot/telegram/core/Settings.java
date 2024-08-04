@@ -261,7 +261,7 @@ public class Settings {
     @SneakyThrows
     public void cdekEdit1(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
-            chatService.updateState(chatId, WAIT_EDIT_PUBLISH_4);
+            chatService.updateState(chatId, WAIT_EDIT_CDEK_1);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
@@ -277,7 +277,6 @@ public class Settings {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
-                sendMessage.setParseMode(ParseMode.MARKDOWN);
                 telegramBot.justSendMessage(sendMessage);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -288,7 +287,7 @@ public class Settings {
     @SneakyThrows
     public void cdekEdit2(Long chatId, Integer messageId, String text) {
         if (chatService.getState(chatId).equals(NO_WAITING)) {
-            chatService.updateState(chatId, WAIT_EDIT_PUBLISH_4);
+            chatService.updateState(chatId, WAIT_EDIT_CDEK_2);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setText("Отправьте новый текст");
             sendMessage.setChatId(chatId);
@@ -302,7 +301,6 @@ public class Settings {
                 chatService.updateState(chatId, NO_WAITING);
                 telegramBot.deleteMessage(chatId, messageId);
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setParseMode(ParseMode.MARKDOWN);
                 sendMessage.setText("Новый текст: \n\n" + text);
                 sendMessage.setChatId(chatId);
                 telegramBot.justSendMessage(sendMessage);
