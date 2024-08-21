@@ -10,7 +10,7 @@ import java.util.List;
 @Component
 public class PublishFreeInline {
 
-    public InlineKeyboardMarkup getPublishFreeInline() {
+    public InlineKeyboardMarkup getPublishFreeInline(String chanel) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 

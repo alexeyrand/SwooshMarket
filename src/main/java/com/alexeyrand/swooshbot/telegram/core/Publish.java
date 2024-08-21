@@ -38,6 +38,8 @@ public class Publish {
 
     public void PublishFree(Message message, Long chatId) {
         String text = message.getCaption();
+        String chanel = chatService.getChanel(chatId);
+        Long chanelId = chanel.equals("chanel") ? -1002141489384L : -1002141489384L;
 
         if (!message.hasPhoto()) {
             SendMessage responseMessage = new SendMessage();
@@ -55,7 +57,7 @@ public class Publish {
             if (chatService.isBlock(chatId)) {
                 chatService.updateBlock(chatId, false);
                 Flag flag = new Flag(telegramBot, utils, queryHandler, menuInline, mainMenuInline, chatService, photoService);
-                flag.setChatIdChannel(-1002141489384L);
+                flag.setChatIdChannel(chanelId);
                 flag.setChatId(chatId);
                 flag.setText(text);
                 flag.setUsername(username);

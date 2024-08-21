@@ -10,7 +10,7 @@ import java.util.List;
 @Component
 public class PublishInline {
 
-    public InlineKeyboardMarkup getPublishInline() {
+    public InlineKeyboardMarkup getPublishInline(String chanel) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
@@ -20,11 +20,11 @@ public class PublishInline {
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
         inlineKeyboardButton1.setText("Обычная публикация");
-        inlineKeyboardButton1.setCallbackData("publish/free");
+        inlineKeyboardButton1.setCallbackData("publish/" + chanel + "/free");
 
         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
         inlineKeyboardButton2.setText("Публикация без очереди");
-        inlineKeyboardButton2.setCallbackData("publish/paid");
+        inlineKeyboardButton2.setCallbackData("publish/" + chanel + "/paid");
 
         InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
         inlineKeyboardButton3.setText("Назад");

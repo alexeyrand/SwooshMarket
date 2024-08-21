@@ -23,10 +23,15 @@ public class MenuInline {
         List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline5 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline6 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline7 = new ArrayList<>();
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
-        inlineKeyboardButton1.setText("Публикация поста");
+        inlineKeyboardButton1.setText("Публикация поста в канал");
         inlineKeyboardButton1.setCallbackData("publish");
+
+        InlineKeyboardButton inlineKeyboardButton7 = new InlineKeyboardButton();
+        inlineKeyboardButton7.setText("Публикация поста в чат");
+        inlineKeyboardButton7.setCallbackData("publishInChat");
 
         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
         inlineKeyboardButton2.setText("Легит Чек");
@@ -51,10 +56,11 @@ public class MenuInline {
         //inlineKeyboardButton1.setCallbackData(shopSplit[4]);
 
         rowInline1.add(inlineKeyboardButton1);
-        rowInline2.add(inlineKeyboardButton2);
-        rowInline3.add(inlineKeyboardButton3);
-        rowInline4.add(inlineKeyboardButton4);
-        rowInline5.add(inlineKeyboardButton5);
+        rowInline2.add(inlineKeyboardButton7);
+        rowInline3.add(inlineKeyboardButton2);
+        rowInline4.add(inlineKeyboardButton3);
+//        rowInline5.add(inlineKeyboardButton4);
+        rowInline7.add(inlineKeyboardButton5);
 
 
         rowsInline.add(rowInline1);
@@ -62,10 +68,11 @@ public class MenuInline {
         rowsInline.add(rowInline3);
         rowsInline.add(rowInline4);
         rowsInline.add(rowInline5);
+        rowsInline.add(rowInline7);
 
         if (chatId.equals(658756678L)  || chatId.equals(430899374L)) {
             rowInline6.add(inlineKeyboardButton6);
-            rowsInline.add(rowInline6);
+//            rowsInline.add(rowInline6);
         }
 
         markupInline.setKeyboard(rowsInline);

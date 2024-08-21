@@ -52,15 +52,34 @@ public class QueryHandler {
     private final LegitInline legitInline;
 
     @SneakyThrows
-    public void publishReceived(Long chatId, Integer messageId) {
+    public void publishReceived(Long chatId, Integer messageId, String data) {
+        String chanel;
+        if (data.equals("publish") || data.equals("publishInChat")) {
+
+
+
+            chanel = data.equals("publish") ? "chanel" : "chat";
+        } else {
+            chanel = chatService.getChanel(chatId);
+        }
         File image = ResourceUtils.getFile("classpath:" + "static/images/publish.jpg");
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\menu.txt");
-        String answer = Files.readString(path);
+
+        String answer;
+        if (chanel.equals("chanel")) {
+            Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\menu.txt");
+            answer = Files.readString(path);
+        } else {
+            Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\menu_chat.txt");
+            answer = Files.readString(path);
+        }
+
+        chatService.setChanel(chatId, chanel);
+
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));
         photo.setCaption(answer);
-        photo.setReplyMarkup(publishInline.getPublishInline());
+        photo.setReplyMarkup(publishInline.getPublishInline(chanel));
         photo.setParseMode(ParseMode.MARKDOWNV2);
 
         DeleteMessage deleteMessage = new DeleteMessage();
@@ -75,12 +94,14 @@ public class QueryHandler {
     @SneakyThrows
     public void publishFreeReceived(Long chatId, Integer messageId) {
 
+        String chanel = chatService.getChanel(chatId);
+
         Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\free.txt");
         String answer = Files.readString(path);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(answer);
-        message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
+        message.setReplyMarkup(publishFreeInline.getPublishFreeInline(chanel));
         message.setParseMode(ParseMode.MARKDOWNV2);
 
         DeleteMessage deleteMessage = new DeleteMessage();
@@ -95,11 +116,13 @@ public class QueryHandler {
         Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\paid.txt");
         String answer = Files.readString(path);
 
+        String chanel = chatService.getChanel(chatId);
+
         chatService.updateState(chatId, WAIT_PAID_PUBLISH);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(answer);
-        message.setReplyMarkup(publishFreeInline.getPublishFreeInline());
+        message.setReplyMarkup(publishFreeInline.getPublishFreeInline(chanel));
         message.setParseMode(ParseMode.MARKDOWNV2);
 
         DeleteMessage deleteMessage = new DeleteMessage();

@@ -216,19 +216,23 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             switch (data) {
                 case "menu" -> messageHandler.StartCommandReceived(chatId, messageId);
-                case "publish" -> queryHandler.publishReceived(chatId, messageId);
+                case "publish" -> queryHandler.publishReceived(chatId, messageId, data);
+                case "publishInChat" -> queryHandler.publishReceived(chatId, messageId, data);
                 case "legit" -> queryHandler.legitReceived(chatId, messageId);
                 case "sdek" -> queryHandler.sdekReceived(chatId, messageId);
                 case "garant" -> queryHandler.garantReceived(chatId, messageId);
                 case "adv" -> queryHandler.advertisingReceived(chatId, messageId);
 
-                case "publish/free" -> queryHandler.publishFreeReceived(chatId, messageId);
+                case "publish/chanel/free" -> queryHandler.publishFreeReceived(chatId, messageId);
+                case "publish/chat/free" -> queryHandler.publishFreeReceived(chatId, messageId);
                 case "publish/back" -> messageHandler.StartCommandReceived(chatId, messageId);
 
-                case "publish/paid" -> queryHandler.publishCheckPaidReceived(chatId, messageId);
-                case "publish/paid/publish" -> queryHandler.publishPaidReceived(chatId, messageId);
+                case "publish/chanel/paid" -> queryHandler.publishCheckPaidReceived(chatId, messageId);
+                case "publish/chanel/paid/publish" -> queryHandler.publishPaidReceived(chatId, messageId);
+                case "publish/chat/paid" -> queryHandler.publishCheckPaidReceived(chatId, messageId);
+                case "publish/chat/paid/publish" -> queryHandler.publishPaidReceived(chatId, messageId);
 
-                case "publish/free/back" -> queryHandler.publishReceived(chatId, messageId);
+                case "publish/free/back" -> queryHandler.publishReceived(chatId, messageId, data);
                 case "publish/free/success" -> messageHandler.StartCommandReceived(chatId, messageId);
 
                 case "sdek/order" -> queryHandler.sdekOrderReceived(chatId, messageId);

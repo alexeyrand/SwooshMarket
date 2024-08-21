@@ -45,4 +45,9 @@ public class Chat {
     @Builder.Default
     @Column(name = "cdek_status")
     private Boolean sdekStatus = false;
+
+    /** Канал, куда нужно запостить публикацию */
+    @Builder.Default
+    @Column(name = "toChanel")
+    private String toChannel = "chanel";
 }

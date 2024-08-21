@@ -28,6 +28,11 @@ public class ChatService {
         return chat.getState();
     }
 
+    public String getChanel(Long chatId) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        return chat.getToChannel();
+    }
+
     public Long getIdByChatId(Long chatId) {
         Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
         return chat.getId();
@@ -51,6 +56,12 @@ public class ChatService {
     public void updateState(Long chatId, State state) {
         Chat chat = chatRepository.findByChatId(chatId).orElse(Chat.builder().chatId(chatId).state(state).build());
         chat.setState(state);
+        chatRepository.save(chat);
+    }
+
+    public void setChanel(Long chatId, String chanel) {
+        Chat chat = chatRepository.findByChatId(chatId).orElseThrow();
+        chat.setToChannel(chanel);
         chatRepository.save(chat);
     }
 
