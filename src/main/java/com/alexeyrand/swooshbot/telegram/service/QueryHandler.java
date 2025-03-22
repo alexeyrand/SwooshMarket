@@ -66,10 +66,10 @@ public class QueryHandler {
 
         String answer;
         if (chanel.equals("chanel")) {
-            Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\menu.txt");
+            Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\publish\\menu.txt");
             answer = Files.readString(path);
         } else {
-            Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\menu_chat.txt");
+            Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\publish\\menu_chat.txt");
             answer = Files.readString(path);
         }
 
@@ -96,7 +96,7 @@ public class QueryHandler {
 
         String chanel = chatService.getChanel(chatId);
 
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\free.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\publish\\free.txt");
         String answer = Files.readString(path);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
@@ -113,7 +113,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishPaidReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\paid.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\publish\\paid.txt");
         String answer = Files.readString(path);
 
         String chanel = chatService.getChanel(chatId);
@@ -137,7 +137,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void sdekReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\cdek\\cdek.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\cdek\\cdek.txt");
         File image = ResourceUtils.getFile("classpath:" + "static/images/sdek.jpg");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
@@ -157,7 +157,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void sdekOrderReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\cdek\\cdekInfo.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\cdek\\cdekInfo.txt");
         String answer = Files.readString(path);
         InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
         SendMessage message = new SendMessage();
@@ -216,7 +216,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishCheckPaidReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\publish\\check.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\publish\\check.txt");
         String answer = Files.readString(path);
         if (chatService.getPaidPublishStatus(chatId)) {
             answer = answer + "\n\n*Статус оплаты*:\nОплачено, услуга доступна ✅";
@@ -271,7 +271,7 @@ public class QueryHandler {
     @SneakyThrows
     public void advertisingReceived(Long chatId, Integer messageId) {
         File image = ResourceUtils.getFile("classpath:" + "static/images/advertising.jpg");
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\adv\\adv.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\adv\\adv.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
@@ -293,7 +293,7 @@ public class QueryHandler {
     @SneakyThrows
     public void garantReceived(Long chatId, Integer messageId) {
         File image = ResourceUtils.getFile("classpath:" + "static/images/garant.jpg");
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\garant\\garant.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\garant\\garant.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
@@ -315,7 +315,7 @@ public class QueryHandler {
     @SneakyThrows
     public void legitReceived(Long chatId, Integer messageId) {
         File image = ResourceUtils.getFile("classpath:" + "static/images/legit.jpg");
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\legit\\legit.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\legit\\legit.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);

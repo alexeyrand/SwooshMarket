@@ -36,7 +36,7 @@ public class MessageHandler {
     @SneakyThrows
     public void StartCommandReceived(Long chatId, Integer messageId) {
 
-        Path path = Paths.get("D:\\jprojects\\SwooshBot\\src\\main\\resources\\text\\menu\\menu.txt");
+        Path path = Paths.get("C:\\Java projects\\SwooshMarket\\src\\main\\resources\\text\\menu\\menu.txt");
         String answer = Files.readString(path);
         InlineKeyboardMarkup inline = menuInline.getMenuInline(chatId);
         File image = ResourceUtils.getFile("classpath:" + "static/images/menu.jpg");

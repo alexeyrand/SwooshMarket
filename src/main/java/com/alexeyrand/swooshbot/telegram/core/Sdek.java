@@ -462,8 +462,8 @@ public class Sdek {
             Float cost = costInfoList.stream().filter(
                     c -> c.getTariff_code().equals(sdekOrderInfo.getTariffCode())
             ).findFirst().orElseThrow().getDelivery_sum();
-            cost = cost * 1.5f;
-
+            cost = cost * 1.999f;
+//            int amount = Math.round(cost);
             telegramBot.deleteMessage(chatId, message.getMessageId());
             //telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
 
@@ -472,7 +472,7 @@ public class Sdek {
                     "После оплаты вы получите трек-номер для отправки и отслеживания посылки",
                     chatId.toString(),
                     config.getPaymentsToken(),
-                    "RUB", List.of(new LabeledPrice("Цена", Math.round(cost) * 100)));
+                    "RUB", List.of(new LabeledPrice("Цена", (int) (cost * 100))));
             invoiceLink.setNeedEmail(true);
             invoiceLink.setNeedName(true);
             invoiceLink.setPayload("sdek");
