@@ -203,7 +203,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             Long chatId = message.getChatId();
             Integer messageId = message.getMessageId();
             String data = query.getData();
-//            String text = query.ge
 
             if (chatService.findWaitByChatId(chatId).isEmpty()) {
                 chatService.save(
