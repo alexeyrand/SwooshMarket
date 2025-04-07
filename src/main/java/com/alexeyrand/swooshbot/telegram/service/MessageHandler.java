@@ -36,11 +36,11 @@ public class MessageHandler {
     @SneakyThrows
     public void StartCommandReceived(Long chatId, Integer messageId) {
 
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/menu/menu.txt");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/menu/menu.txt");
         String answer = Files.readString(path);
         InlineKeyboardMarkup inline = menuInline.getMenuInline(chatId);
 //        File image = ResourceUtils.getFile("classpath:" + "static/images/menu.jpg");
-        File image = new File("/root/SwooshBot/src/main/resources/static/images/menu.jpg");
+        File image = new File("/root/SwooshMarket/src/main/resources/static/images/menu.jpg");
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(new InputFile(image));

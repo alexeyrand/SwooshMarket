@@ -53,8 +53,8 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishReceived(Long chadId, Integer messageId) {
-        File image = new File("/root/SwooshBot/src/main/resources/static/images/publish.jpg");
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/menu.txt");
+        File image = new File("/root/SwooshMarket/src/main/resources/static/images/publish.jpg");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/publish/menu.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chadId);
@@ -75,7 +75,7 @@ public class QueryHandler {
     @SneakyThrows
     public void publishFreeReceived(Long chatId, Integer messageId) {
 
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/free.txt");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/publish/free.txt");
         String answer = Files.readString(path);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
@@ -93,7 +93,7 @@ public class QueryHandler {
 
     @SneakyThrows
     public void publishPaidReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/paid.txt");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/publish/paid.txt");
         String answer = Files.readString(path);
 
         chatService.updateState(chatId, WAIT_PAID_PUBLISH);
@@ -116,8 +116,8 @@ public class QueryHandler {
 
     @SneakyThrows
     public void sdekReceived(Long chatId, Integer messageId) {
-Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
-        File image = new File("/root/SwooshBot/src/main/resources/static/images/sdek.jpg");
+Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/cdek/cdek.txt");
+        File image = new File("/root/SwooshMarket/src/main/resources/static/images/sdek.jpg");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
@@ -136,7 +136,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
     @SneakyThrows
     public void sdekOrderReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdekInfo.txt");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/cdek/cdekInfo.txt");
         String answer = Files.readString(path);
         InlineKeyboardMarkup inline = sdekInline.getSdekOrderInline();
         SendMessage message = new SendMessage();
@@ -195,7 +195,7 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
     @SneakyThrows
     public void publishCheckPaidReceived(Long chatId, Integer messageId) {
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/publish/check.txt");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/publish/check.txt");
         String answer = Files.readString(path);
         if (chatService.getPaidPublishStatus(chatId)) {
             answer = answer + "\n\n*Статус оплаты*:\nОплачено, услуга доступна ✅";
@@ -249,8 +249,8 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
     @SneakyThrows
     public void advertisingReceived(Long chatId, Integer messageId) {
-        File image = ResourceUtils.getFile("/root/SwooshBot/src/main/resources/static/images/advertising.jpg");
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/adv/adv.txt");
+        File image = ResourceUtils.getFile("/root/SwooshMarket/src/main/resources/static/images/advertising.jpg");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/adv/adv.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
@@ -271,8 +271,8 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
     @SneakyThrows
     public void garantReceived(Long chatId, Integer messageId) {
-        File image = ResourceUtils.getFile("/root/SwooshBot/src/main/resources/static/images/garant.jpg");
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/garant/garant.txt");
+        File image = ResourceUtils.getFile("/root/SwooshMarket/src/main/resources/static/images/garant.jpg");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/garant/garant.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
@@ -293,8 +293,8 @@ Path path = Paths.get("/root/SwooshBot/src/main/resources/text/cdek/cdek.txt");
 
     @SneakyThrows
     public void legitReceived(Long chatId, Integer messageId) {
-        File image = ResourceUtils.getFile("/root/SwooshBot/src/main/resources/static/images/legit.jpg");
-        Path path = Paths.get("/root/SwooshBot/src/main/resources/text/legit/legit.txt");
+        File image = ResourceUtils.getFile("/root/SwooshMarket/src/main/resources/static/images/legit.jpg");
+        Path path = Paths.get("/root/SwooshMarket/src/main/resources/text/legit/legit.txt");
         String answer = Files.readString(path);
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
