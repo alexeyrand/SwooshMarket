@@ -462,7 +462,7 @@ public class Sdek {
             Float cost = costInfoList.stream().filter(
                     c -> c.getTariff_code().equals(sdekOrderInfo.getTariffCode())
             ).findFirst().orElseThrow().getDelivery_sum();
-            cost = cost * 1.999f;
+            cost = cost * 1.6f;
 //            int amount = Math.round(cost);
             telegramBot.deleteMessage(chatId, message.getMessageId());
             //telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
