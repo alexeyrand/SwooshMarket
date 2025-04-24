@@ -1,6 +1,7 @@
 package com.alexeyrand.swooshbot.model.dto.calculator;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 @Getter
@@ -18,4 +19,6 @@ public class CostInfo {
     String period_max;
     String calendar_min;
     String calendar_max;
+    @JsonIgnore
+    DeliveryDateRange delivery_date_range;
 }
