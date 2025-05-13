@@ -34,7 +34,7 @@ public class MenuInline {
 
         InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
         inlineKeyboardButton3.setText("СДЭК 50%");
-        inlineKeyboardButton3.setCallbackData("sdek");
+        inlineKeyboardButton3.setCallbackData("publish");
 
         InlineKeyboardButton inlineKeyboardButton4 = new InlineKeyboardButton();
         inlineKeyboardButton4.setText("Гарант");
@@ -59,7 +59,7 @@ public class MenuInline {
 
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
-        rowsInline.add(rowInline3);
+//        rowsInline.add(rowInline3);
 //        rowsInline.add(rowInline4);
         rowsInline.add(rowInline5);
 

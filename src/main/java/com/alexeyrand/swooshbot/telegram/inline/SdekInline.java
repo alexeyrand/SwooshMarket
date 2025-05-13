@@ -27,7 +27,7 @@ private final ChatService chatService;
 
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
         inlineKeyboardButton1.setText("Создать накладную");
-        inlineKeyboardButton1.setCallbackData("sdek/order");
+        inlineKeyboardButton1.setCallbackData("menu");
 
         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
         inlineKeyboardButton2.setText("Назад");

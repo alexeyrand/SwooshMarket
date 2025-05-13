@@ -410,46 +410,50 @@ public class Sdek {
 
     @SneakyThrows
     public void createOrder(Long chatId) {
-        String uuid = requestSender.createOrder(chatId);
-        Thread.sleep(3000);
-        SdekOrderInfoResponse sdekOrderInfoResponse = requestSender.getOrderInfo(uuid);
-        sdekOrderInfoResponse.setUuid(uuid);
-        handlerSdekOrderInfoResponse(chatId, sdekOrderInfoResponse);
-
-        String answer;
-        if (sdekOrderInfoResponse != null) {
-            answer = "Информаци о заказе:\n" +
-                    "Статус: " + sdekOrderInfoResponse.getStatus() +
-                    "\nДата создания: " + sdekOrderInfoResponse.getDate() +
-                    "\n✅Трек-номер для отслеживания: " + sdekOrderInfoResponse.getOrderNumber();
-        } else {
-            answer = "Во время создания заказа произошла ошибка. Обратитесь к администратору.";
-        }
-        if (sdekOrderInfoResponse.getWarn() != null) {
-            answer = answer + "\n\nПредупреждения: \n" + sdekOrderInfoResponse.getWarn();
-        }
-        if (sdekOrderInfoResponse.getErr() != null) {
-            answer = answer + "\n\nОшибки: \n" + sdekOrderInfoResponse.getErr();
-        }
-        answer = answer + "\n\nuuid: " + uuid;
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText(answer);
-        sendMessage.setParseMode(ParseMode.MARKDOWN);
-        sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+        sendMessage.setText("Оформление накладной сдек временно не доступно");
         telegramBot.justSendMessage(sendMessage);
-        chatService.updateState(chatId, NO_WAITING);
-
-        if (Objects.equals(sdekOrderInfoResponse.getStatus(), "Заказ успешно создан")) {
-            CdekOrderInfo cdekOrderInfo = CdekOrderInfo.builder()
-                    .chatId(chatId)
-                    .username(chatService.findWaitByChatId(chatId).orElseThrow().getUsername())
-                    .state(sdekOrderInfoResponse.getStatus())
-                    .date(sdekOrderInfoResponse.getDate())
-                    .uuid(sdekOrderInfoResponse.getUuid())
-                    .build();
-            cdekOrderInfoService.save(cdekOrderInfo);
-        }
+//        String uuid = requestSender.createOrder(chatId);
+//        Thread.sleep(3000);
+//        SdekOrderInfoResponse sdekOrderInfoResponse = requestSender.getOrderInfo(uuid);
+//        sdekOrderInfoResponse.setUuid(uuid);
+//        handlerSdekOrderInfoResponse(chatId, sdekOrderInfoResponse);
+//
+//        String answer;
+//        if (sdekOrderInfoResponse != null) {
+//            answer = "Информаци о заказе:\n" +
+//                    "Статус: " + sdekOrderInfoResponse.getStatus() +
+//                    "\nДата создания: " + sdekOrderInfoResponse.getDate() +
+//                    "\n✅Трек-номер для отслеживания: " + sdekOrderInfoResponse.getOrderNumber();
+//        } else {
+//            answer = "Во время создания заказа произошла ошибка. Обратитесь к администратору.";
+//        }
+//        if (sdekOrderInfoResponse.getWarn() != null) {
+//            answer = answer + "\n\nПредупреждения: \n" + sdekOrderInfoResponse.getWarn();
+//        }
+//        if (sdekOrderInfoResponse.getErr() != null) {
+//            answer = answer + "\n\nОшибки: \n" + sdekOrderInfoResponse.getErr();
+//        }
+//        answer = answer + "\n\nuuid: " + uuid;
+//        SendMessage sendMessage = new SendMessage();
+//        sendMessage.setChatId(chatId);
+//        sendMessage.setText(answer);
+//        sendMessage.setParseMode(ParseMode.MARKDOWN);
+//        sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+//        telegramBot.justSendMessage(sendMessage);
+//        chatService.updateState(chatId, NO_WAITING);
+//
+//        if (Objects.equals(sdekOrderInfoResponse.getStatus(), "Заказ успешно создан")) {
+//            CdekOrderInfo cdekOrderInfo = CdekOrderInfo.builder()
+//                    .chatId(chatId)
+//                    .username(chatService.findWaitByChatId(chatId).orElseThrow().getUsername())
+//                    .state(sdekOrderInfoResponse.getStatus())
+//                    .date(sdekOrderInfoResponse.getDate())
+//                    .uuid(sdekOrderInfoResponse.getUuid())
+//                    .build();
+//            cdekOrderInfoService.save(cdekOrderInfo);
+//        }
     }
 
     @SneakyThrows
@@ -457,63 +461,68 @@ public class Sdek {
         Integer shipmentCityCode = requestSender.getCityCode(chatId, sdekOrderInfo.getShipmentCity());
         Integer deliveryCityCode = requestSender.getCityCode(chatId, sdekOrderInfo.getDeliveryCity());
 
-        CalculateCostResponse calculateCostResponse = requestSender.calculateTheCostOrder(
-                chatId,
-                shipmentCityCode,
-                deliveryCityCode
-        );
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Оформление накладной сдек временно не доступно");
+        telegramBot.justSendMessage(sendMessage);
 
-        if (calculateCostResponse != null && !calculateCostResponse.getTariff_codes().isEmpty()) {
-            List<CostInfo> costInfoList = calculateCostResponse.getTariff_codes();
-            Float cost = costInfoList.stream().filter(
-                    c -> c.getTariff_code().equals(sdekOrderInfo.getTariffCode())
-            ).findFirst().orElseThrow().getDelivery_sum();
-            cost = cost * 1.6f;
-            telegramBot.deleteMessage(chatId, message.getMessageId());
-            //telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
-
-            CreateInvoiceLink invoiceLink = new CreateInvoiceLink(
-                    "Офомрление накладной",
-                    "После оплаты вам будет направлен трек номер",
-                    chatId.toString(),
-                    config.getPaymentsToken(),
-                    "RUB", List.of(new LabeledPrice("Цена", (int) (cost * 100))));
-            invoiceLink.setNeedEmail(true);
-            invoiceLink.setSendEmailToProvider(true);
-            invoiceLink.setNeedPhoneNumber(true);
-            invoiceLink.setSendPhoneNumberToProvider(true);
-            invoiceLink.setPayload("sdek");
-            Receipt receipt = new Receipt();
-            List<Item> items = new ArrayList<>();
-            Item item = new Item();
-            item.setDescription("Publication out of sequence");
-            item.setQuantity("1");
-            Amount amount = new Amount();
-            amount.setValue(cost.toString());
-            amount.setCurrency("RUB");
-            item.setVat_code(1);
-            item.setAmount(amount);
-            items.add(item);
-            receipt.setItems(items);
-            ProviderData providerData = new ProviderData();
-            providerData.setReceipt(receipt);
-            final ObjectMapper mapper = new ObjectMapper();
-            String jsonDataRequest = mapper.writeValueAsString(providerData);
-            invoiceLink.setProviderData(jsonDataRequest);
-            String response = telegramBot.buy(invoiceLink);
-
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\nЦена доставки: " + cost + "руб.");
-            sendMessage.setReplyMarkup(sdekInline.getCdekPayInline(response, chatId));
-            telegramBot.justSendMessage(sendMessage);
-        } else {
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText("Выбранный тариф не поддерживается на маршруте:\n" + sdekOrderInfo.getShipmentCity() + " \n   ---> \n" + sdekOrderInfo.getDeliveryCity() + "\n\nВоспользуйтесь другим тарифом или уточните адреса ПВЗ.");
-            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
-            telegramBot.justSendMessage(sendMessage);
-        }
+//        CalculateCostResponse calculateCostResponse = requestSender.calculateTheCostOrder(
+//                chatId,
+//                shipmentCityCode,
+//                deliveryCityCode
+//        );
+//
+//        if (calculateCostResponse != null && !calculateCostResponse.getTariff_codes().isEmpty()) {
+//            List<CostInfo> costInfoList = calculateCostResponse.getTariff_codes();
+//            Float cost = costInfoList.stream().filter(
+//                    c -> c.getTariff_code().equals(sdekOrderInfo.getTariffCode())
+//            ).findFirst().orElseThrow().getDelivery_sum();
+//            cost = cost * 1.6f;
+//            telegramBot.deleteMessage(chatId, message.getMessageId());
+//            //telegramBot.deleteMessage(chatId, message.getMessageId() - 1);
+//
+//            CreateInvoiceLink invoiceLink = new CreateInvoiceLink(
+//                    "Офомрление накладной",
+//                    "После оплаты вам будет направлен трек номер",
+//                    chatId.toString(),
+//                    config.getPaymentsToken(),
+//                    "RUB", List.of(new LabeledPrice("Цена", (int) (cost * 100))));
+//            invoiceLink.setNeedEmail(true);
+//            invoiceLink.setSendEmailToProvider(true);
+//            invoiceLink.setNeedPhoneNumber(true);
+//            invoiceLink.setSendPhoneNumberToProvider(true);
+//            invoiceLink.setPayload("sdek");
+//            Receipt receipt = new Receipt();
+//            List<Item> items = new ArrayList<>();
+//            Item item = new Item();
+//            item.setDescription("Publication out of sequence");
+//            item.setQuantity("1");
+//            Amount amount = new Amount();
+//            amount.setValue(cost.toString());
+//            amount.setCurrency("RUB");
+//            item.setVat_code(1);
+//            item.setAmount(amount);
+//            items.add(item);
+//            receipt.setItems(items);
+//            ProviderData providerData = new ProviderData();
+//            providerData.setReceipt(receipt);
+//            final ObjectMapper mapper = new ObjectMapper();
+//            String jsonDataRequest = mapper.writeValueAsString(providerData);
+//            invoiceLink.setProviderData(jsonDataRequest);
+//            String response = telegramBot.buy(invoiceLink);
+//
+//            SendMessage sendMessage = new SendMessage();
+//            sendMessage.setChatId(chatId);
+//            sendMessage.setText(sdekOrderInfo.getInfo() + "\n\nЦена доставки: " + cost + "руб.");
+//            sendMessage.setReplyMarkup(sdekInline.getCdekPayInline(response, chatId));
+//            telegramBot.justSendMessage(sendMessage);
+//        } else {
+//            SendMessage sendMessage = new SendMessage();
+//            sendMessage.setChatId(chatId);
+//            sendMessage.setText("Выбранный тариф не поддерживается на маршруте:\n" + sdekOrderInfo.getShipmentCity() + " \n   ---> \n" + sdekOrderInfo.getDeliveryCity() + "\n\nВоспользуйтесь другим тарифом или уточните адреса ПВЗ.");
+//            sendMessage.setReplyMarkup(sdekInline.getSdekBackInline());
+//            telegramBot.justSendMessage(sendMessage);
+//        }
     }
 
     private void createSdekOrderRequestIfNotExist(Long chatId) {
