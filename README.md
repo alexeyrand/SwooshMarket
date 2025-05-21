@@ -7,7 +7,7 @@
 + Интеграция с сервисом доставки СДЭК
 + Возможность заказать услугу legit
 ### **Общая структурная схема архитектуры**
-![Structure schema](/images/schema.png)
+![Structure schema](/images/Schema.png)
 
 ### **Технологии**
 + Java 17
